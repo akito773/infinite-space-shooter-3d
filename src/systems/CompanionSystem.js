@@ -93,7 +93,7 @@ export class CompanionSystem {
         avatarImg.style.cssText = `
             width: 50px;
             height: 50px;
-            background: url('/assets/luna_avatar.png') center center / cover;
+            background: url('${import.meta.env.BASE_URL}assets/luna_avatar.png') center center / cover;
             border-radius: 50%;
             margin-right: 15px;
             border: 2px solid #ff6b9d;
