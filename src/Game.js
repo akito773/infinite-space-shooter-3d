@@ -173,6 +173,13 @@ export class Game {
         // サウンドマネージャー初期化
         this.soundManager = new SoundManager();
         
+        // メインBGMを開始（ユーザー操作後に自動再生）
+        document.addEventListener('click', () => {
+            if (this.soundManager && !this.soundManager.currentBGM) {
+                this.soundManager.playMainBGM();
+            }
+        }, { once: true });
+        
         // インベントリシステム初期化（UIより先に初期化）
         this.inventorySystem = new InventorySystem();
         

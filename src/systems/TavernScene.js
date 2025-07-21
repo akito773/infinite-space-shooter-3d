@@ -259,14 +259,17 @@ export class TavernScene {
     }
     
     playTavernMusic() {
-        // 酒場用の音楽を再生（実装予定）
-        console.log('Playing tavern background music...');
+        // 酒場用の音楽を再生
+        if (this.game.soundManager) {
+            this.game.soundManager.playTavernBGM();
+        }
     }
     
     resumeGameMusic() {
-        // ゲーム音楽に戻す（実装予定）  
-        console.log('Resuming game background music...');
-    }
+        // ゲーム音楽に戻す
+        if (this.game.soundManager) {
+            this.game.soundManager.playMainBGM();
+        }
 }
 
 // CSS追加

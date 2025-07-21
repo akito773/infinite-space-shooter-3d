@@ -3,12 +3,21 @@ export class SoundManager {
         this.sounds = {};
         this.enabled = true;
         this.volume = 0.5;
+        this.bgmVolume = 0.3;
         
         // AudioContextの初期化
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
+        // BGM管理
+        this.bgmTracks = {};
+        this.currentBGM = null;
+        this.currentBGMName = null;
+        
         // 基本的なサウンドエフェクトを生成
         this.createSounds();
+        
+        // BGMを初期化
+        this.initializeBGM();
     }
     
     createSounds() {
@@ -146,6 +155,134 @@ export class SoundManager {
         this.enabled = !this.enabled;
         if (!this.enabled) {
             this.stopEngine();
+            this.stopBGM();
         }
+    }
+    
+    // BGM関連のメソッド
+    initializeBGM() {
+        // BGMトラックの定義
+        const bgmFiles = {
+            main: 'assets/bgm/epic_space_orchestra_2025-07-21T17-36-18.wav',
+            boss: 'assets/bgm/boss_battle_theme.wav',
+            raidBoss: 'assets/bgm/raid_boss_theme.wav',
+            tavern: 'assets/bgm/tavern_jazz_theme.wav',
+            planet: 'assets/bgm/planet_exploration_theme.wav'
+        };
+        
+        // 各BGMのAudioオブジェクトを作成
+        Object.entries(bgmFiles).forEach(([name, path]) => {
+            const audio = new Audio(path);
+            audio.loop = true;
+            audio.volume = this.bgmVolume;
+            
+            // メインBGMは26秒でループ（無音部分を避ける）
+            if (name === 'main') {
+                audio.addEventListener('timeupdate', () => {
+                    if (audio.currentTime >= 26) {
+                        audio.currentTime = 0;
+                    }
+                });
+            }
+            
+            this.bgmTracks[name] = audio;
+        });
+    }
+    
+    playBGM(trackName, fadeIn = true) {
+        if (!this.enabled) return;
+        
+        // 既に同じBGMが再生中なら何もしない
+        if (this.currentBGMName === trackName && this.currentBGM && !this.currentBGM.paused) {
+            return;
+        }
+        
+        // 現在のBGMをフェードアウト
+        if (this.currentBGM) {
+            this.fadeOutBGM();
+        }
+        
+        // 新しいBGMを再生
+        const newBGM = this.bgmTracks[trackName];
+        if (newBGM) {
+            this.currentBGM = newBGM;
+            this.currentBGMName = trackName;
+            
+            if (fadeIn) {
+                newBGM.volume = 0;
+                newBGM.play().catch(e => console.log('BGM再生エラー:', e));
+                
+                // フェードイン
+                let volume = 0;
+                const fadeInterval = setInterval(() => {
+                    volume += 0.01;
+                    if (volume >= this.bgmVolume) {
+                        volume = this.bgmVolume;
+                        clearInterval(fadeInterval);
+                    }
+                    newBGM.volume = volume;
+                }, 20);
+            } else {
+                newBGM.volume = this.bgmVolume;
+                newBGM.play().catch(e => console.log('BGM再生エラー:', e));
+            }
+        }
+    }
+    
+    fadeOutBGM() {
+        if (!this.currentBGM) return;
+        
+        const bgm = this.currentBGM;
+        let volume = bgm.volume;
+        
+        const fadeInterval = setInterval(() => {
+            volume -= 0.02;
+            if (volume <= 0) {
+                volume = 0;
+                bgm.pause();
+                bgm.currentTime = 0;
+                clearInterval(fadeInterval);
+            }
+            bgm.volume = volume;
+        }, 20);
+    }
+    
+    stopBGM() {
+        if (this.currentBGM) {
+            this.currentBGM.pause();
+            this.currentBGM.currentTime = 0;
+            this.currentBGM = null;
+            this.currentBGMName = null;
+        }
+    }
+    
+    setBGMVolume(volume) {
+        this.bgmVolume = Math.max(0, Math.min(1, volume));
+        
+        // 全てのBGMトラックの音量を更新
+        Object.values(this.bgmTracks).forEach(track => {
+            track.volume = this.bgmVolume;
+        });
+    }
+    
+    // 特定のシーン用のBGM再生メソッド
+    playMainBGM() {
+        this.playBGM('main');
+    }
+    
+    playBossBGM() {
+        this.playBGM('boss');
+    }
+    
+    playRaidBossBGM() {
+        this.playBGM('raidBoss');
+    }
+    
+    playTavernBGM() {
+        this.playBGM('tavern');
+    }
+    
+    playPlanetBGM() {
+        this.playBGM('planet');
     }
 }

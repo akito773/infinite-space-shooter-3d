@@ -294,12 +294,9 @@ export class BossSpawnSystem {
         // ボス戦開始演出
         this.startBossBattleSequence();
         
-        // BGM変更（playBossMusicメソッドが存在する場合のみ）
-        if (this.game.soundManager && this.game.soundManager.playBossMusic) {
-            this.game.soundManager.playBossMusic();
-        } else if (this.game.soundManager && this.game.soundManager.play) {
-            // 代替：効果音を再生
-            this.game.soundManager.play('warning');
+        // BGM変更
+        if (this.game.soundManager) {
+            this.game.soundManager.playBossBGM();
         }
         
         // UI表示
@@ -494,11 +491,9 @@ export class BossSpawnSystem {
         // レイドボス戦開始演出
         this.startRaidBossSequence();
         
-        // BGM変更
-        if (this.game.soundManager && this.game.soundManager.playBossMusic) {
-            this.game.soundManager.playBossMusic();
-        } else if (this.game.soundManager && this.game.soundManager.play) {
-            this.game.soundManager.play('warning');
+        // BGM変更（レイドボス用）
+        if (this.game.soundManager) {
+            this.game.soundManager.playRaidBossBGM();
         }
         
         // UI表示
@@ -573,8 +568,8 @@ export class BossSpawnSystem {
         }
         
         // BGMを通常に戻す
-        if (this.game.soundManager && this.game.soundManager.playNormalMusic) {
-            this.game.soundManager.playNormalMusic();
+        if (this.game.soundManager) {
+            this.game.soundManager.playMainBGM();
         }
         
         // ボスHPゲージを非表示
