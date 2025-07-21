@@ -298,12 +298,12 @@ export class PlanetLandingGame {
     start() {
         this.lastTime = Date.now();
         
-        // 自動セーブが存在する場合は自動的にロード
-        const saveInfo = this.systems.saveLoad?.getSaveInfo();
-        if (saveInfo && saveInfo[9]) { // スロット9は自動セーブ
-            console.log('自動セーブを検出、ロードします...');
-            this.systems.saveLoad.load(9);
-        }
+        // 自動セーブ読み込みは無効化（タイトル画面から手動選択）
+        // const saveInfo = this.systems.saveLoad?.getSaveInfo();
+        // if (saveInfo && saveInfo[9]) { // スロット9は自動セーブ
+        //     console.log('自動セーブを検出、ロードします...');
+        //     this.systems.saveLoad.load(9);
+        // }
         
         this.animate();
     }

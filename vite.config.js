@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: '.',
-  base: './',
+  base: '/infinite-space-shooter-3d/',
   server: {
     port: 3000,
     open: true
