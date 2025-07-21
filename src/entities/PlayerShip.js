@@ -339,6 +339,17 @@ export class PlayerShip {
         // プレイヤーの向きに基づいた移動
         const moveSpeed = inputManager.keys.shift ? this.speed * 2 : this.speed;
         
+        // ブースト開始検出
+        if (inputManager.keys.shift && !this.wasBoosting) {
+            this.wasBoosting = true;
+            // ルナに通知
+            if (this.scene.userData.game && this.scene.userData.game.companionSystem) {
+                this.scene.userData.game.companionSystem.onSpeedBoost();
+            }
+        } else if (!inputManager.keys.shift) {
+            this.wasBoosting = false;
+        }
+        
         // 前進・後退の移動ベクトル
         const forward = new THREE.Vector3(0, 0, -1);
         forward.applyQuaternion(this.group.quaternion);

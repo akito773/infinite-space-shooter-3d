@@ -42,6 +42,7 @@ import { StoryProgressionSystem } from './systems/StoryProgressionSystem.js';
 import { CompanionSystem } from './systems/CompanionSystem.js';
 import { TavernScene } from './systems/TavernScene.js';
 import { GalaxyMap } from './systems/GalaxyMap.js';
+import { VoiceSystem } from './systems/VoiceSystem.js';
 
 export class Game {
     constructor() {
@@ -238,11 +239,19 @@ export class Game {
         // ストーリー進行システム初期化
         this.storySystem = new StoryProgressionSystem(this);
         
+        // ボイスシステム初期化
+        this.voiceSystem = new VoiceSystem(this);
+        
         // 相棒システム初期化
         this.companionSystem = new CompanionSystem(this);
         
         // 酒場シーン初期化
         this.tavernScene = new TavernScene(this);
+        
+        // ルナのボイスをプリロード
+        this.voiceSystem.preloadCharacterVoices('luna').then(() => {
+            console.log('Luna voices loaded successfully! CV: 日向ここあ');
+        });
         
         // sceneにgame参照を追加（アイテム用）
         this.scene.userData.game = this;
@@ -642,6 +651,10 @@ export class Game {
                     } else {
                         this.soundManager.play('collect');
                     }
+                    // ルナに通知
+                    if (this.companionSystem) {
+                        this.companionSystem.onItemPickup(result.type);
+                    }
                 }
                 // HP更新
                 this.updateHealth(this.player.health, this.player.maxHealth);
@@ -748,6 +761,27 @@ export class Game {
                 this.asteroidFields,
                 missionTarget
             );
+        }
+        
+        // 戦闘状態の検出
+        let enemiesNearby = false;
+        this.enemies.forEach(enemy => {
+            if (enemy.isAlive) {
+                const distance = enemy.group.position.distanceTo(this.player.group.position);
+                if (distance < 150) {
+                    enemiesNearby = true;
+                }
+            }
+        });
+        
+        // 戦闘開始/終了の検出
+        if (enemiesNearby && !this.inCombat) {
+            this.inCombat = true;
+            if (this.companionSystem && this.companionSystem.isActive) {
+                this.companionSystem.onCombatStart();
+            }
+        } else if (!enemiesNearby && this.inCombat) {
+            this.inCombat = false;
         }
         
         // 採掘システム更新

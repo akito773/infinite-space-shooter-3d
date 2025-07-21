@@ -83,7 +83,25 @@ export class VoiceSystem {
                 // 酒場
                 tavern_meet_1: 'luna_tavern_meet_01.mp3',
                 tavern_meet_2: 'luna_tavern_meet_02.mp3',
-                tavern_meet_3: 'luna_tavern_meet_03.mp3'
+                tavern_meet_3: 'luna_tavern_meet_03.mp3',
+                
+                // 追加の反応ボイス
+                itemPickup_1: 'luna_item_01.mp3',
+                itemPickup_2: 'luna_item_02.mp3',
+                itemPickup_3: 'luna_item_03.mp3',
+                itemPickup_4: 'luna_item_04.mp3',
+                
+                lowHealth_1: 'luna_low_health_01.mp3',
+                lowHealth_2: 'luna_low_health_02.mp3',
+                lowHealth_3: 'luna_low_health_03.mp3',
+                
+                speedBoost_1: 'luna_boost_01.mp3',
+                speedBoost_2: 'luna_boost_02.mp3',
+                speedBoost_3: 'luna_boost_03.mp3',
+                
+                longFlight_1: 'luna_long_flight_01.mp3',
+                longFlight_2: 'luna_long_flight_02.mp3',
+                longFlight_3: 'luna_long_flight_03.mp3'
             }
         };
         
@@ -234,6 +252,18 @@ export class VoiceSystem {
                 break;
             case 'casual':
                 voiceKeys.push('casual_1', 'casual_2', 'casual_3', 'casual_4', 'casual_5');
+                break;
+            case 'itemPickup':
+                voiceKeys.push('itemPickup_1', 'itemPickup_2', 'itemPickup_3', 'itemPickup_4');
+                break;
+            case 'lowHealth':
+                voiceKeys.push('lowHealth_1', 'lowHealth_2', 'lowHealth_3');
+                break;
+            case 'speedBoost':
+                voiceKeys.push('speedBoost_1', 'speedBoost_2', 'speedBoost_3');
+                break;
+            case 'longFlight':
+                voiceKeys.push('longFlight_1', 'longFlight_2', 'longFlight_3');
                 break;
             default:
                 console.warn(`Unknown Luna voice category: ${category}`);

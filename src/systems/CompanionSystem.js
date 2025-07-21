@@ -66,6 +66,32 @@ export class CompanionSystem {
                 "今度一緒に飲みに行きましょうよ〜",
                 "あなたの機体、カッコいいわね！",
                 "ギルドでも噂になってるのよ、あなたのこと"
+            ],
+            
+            // 追加の反応
+            itemPickup: [
+                "いいもの拾ったわね！",
+                "それ、結構レアよ〜",
+                "ラッキー！",
+                "おめでとう〜♪"
+            ],
+            
+            lowHealth: [
+                "大丈夫！？無理しないで！",
+                "ちょっと危ないよ！修理した方がいいかも",
+                "心配だなぁ...気をつけて！"
+            ],
+            
+            speedBoost: [
+                "うわっ、速い速い！",
+                "ブースト気持ちよさそう〜",
+                "私も飛びたいな〜"
+            ],
+            
+            longFlight: [
+                "長旅お疲れ様〜",
+                "そろそろ休憩する？",
+                "景色きれいね〜"
             ]
         };
     }
@@ -259,7 +285,7 @@ export class CompanionSystem {
     
     sendCasualMessage() {
         if (!this.isActive) return;
-        if (Date.now() - this.lastMessageTime < 30000) return; // 30秒クールダウン
+        if (Date.now() - this.lastMessageTime < 20000) return; // 20秒クールダウン（短縮）
         
         const message = this.getRandomMessage('casualTalk');
         const index = this.companion.casualTalk.indexOf(message);
@@ -296,10 +322,67 @@ export class CompanionSystem {
     update(deltaTime) {
         if (!this.isActive) return;
         
-        // ランダムな雑談（低確率）
-        if (Math.random() < 0.0001) { // 1/10000の確率で毎フレーム
+        // ランダムな雑談（確率を上げる）
+        if (Math.random() < 0.0003) { // 1/3333の確率で毎フレーム（3倍に増加）
             this.sendCasualMessage();
         }
+        
+        // 低HPチェック
+        if (this.game.player && this.game.player.health < 30 && !this.lowHealthWarned) {
+            this.onLowHealth();
+            this.lowHealthWarned = true;
+        } else if (this.game.player && this.game.player.health > 50) {
+            this.lowHealthWarned = false;
+        }
+        
+        // 長時間飛行チェック
+        if (!this.flightStartTime) {
+            this.flightStartTime = Date.now();
+        }
+        if (Date.now() - this.flightStartTime > 120000 && !this.longFlightCommented) { // 2分
+            this.onLongFlight();
+            this.longFlightCommented = true;
+            this.flightStartTime = Date.now();
+        }
+    }
+    
+    // アイテム取得時の反応
+    onItemPickup(itemType) {
+        if (!this.isActive) return;
+        // 確率で反応（すべてのアイテムに反応しない）
+        if (Math.random() < 0.3) { // 30%の確率
+            const message = this.getRandomMessage('itemPickup');
+            const index = this.companion.itemPickup.indexOf(message);
+            this.showMessage(message, 2500, 'itemPickup', index);
+        }
+    }
+    
+    // 低HP時の反応
+    onLowHealth() {
+        if (!this.isActive) return;
+        const message = this.getRandomMessage('lowHealth');
+        const index = this.companion.lowHealth.indexOf(message);
+        this.showMessage(message, 4000, 'lowHealth', index);
+    }
+    
+    // ブースト使用時の反応
+    onSpeedBoost() {
+        if (!this.isActive) return;
+        // 確率で反応
+        if (Math.random() < 0.2) { // 20%の確率
+            const message = this.getRandomMessage('speedBoost');
+            const index = this.companion.speedBoost.indexOf(message);
+            this.showMessage(message, 3000, 'speedBoost', index);
+        }
+    }
+    
+    // 長時間飛行時の反応
+    onLongFlight() {
+        if (!this.isActive) return;
+        const message = this.getRandomMessage('longFlight');
+        const index = this.companion.longFlight.indexOf(message);
+        this.showMessage(message, 4000, 'longFlight', index);
+        this.longFlightCommented = false;
     }
     
     // 酒場で出会うイベント
