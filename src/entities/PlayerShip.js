@@ -37,7 +37,7 @@ export class PlayerShip {
         const loader = new GLTFLoader();
         
         loader.load(
-            'assets/player_ship_SF-01.glb',
+            '/assets/player_ship_SF-01.glb',
             (gltf) => {
                 console.log('Player ship model loaded successfully');
                 this.modelLoaded = true;
@@ -115,7 +115,7 @@ export class PlayerShip {
             },
             (error) => {
                 console.error('Error loading player ship model:', error);
-                console.log('Attempting to load from: assets/player_ship_SF-01.glb');
+                console.log('Attempting to load from: /assets/player_ship_SF-01.glb');
                 console.log('Make sure the GLB file is placed in the assets folder');
                 // フォールバック：元のジオメトリを使用
                 this.createFallbackMesh();
