@@ -39,6 +39,8 @@ import { HitMarkers } from './systems/HitMarkers.js';
 import { ZoomSystem } from './systems/ZoomSystem.js';
 import { BossSpawnSystem } from './systems/BossSpawnSystem.js';
 import { StoryProgressionSystem } from './systems/StoryProgressionSystem.js';
+import { CompanionSystem } from './systems/CompanionSystem.js';
+import { TavernScene } from './systems/TavernScene.js';
 
 export class Game {
     constructor() {
@@ -226,6 +228,12 @@ export class Game {
         
         // ストーリー進行システム初期化
         this.storySystem = new StoryProgressionSystem(this);
+        
+        // 相棒システム初期化
+        this.companionSystem = new CompanionSystem(this);
+        
+        // 酒場シーン初期化
+        this.tavernScene = new TavernScene(this);
         
         // sceneにgame参照を追加（アイテム用）
         this.scene.userData.game = this;
@@ -804,6 +812,11 @@ export class Game {
         if (this.storySystem) {
             this.storySystem.update(delta);
         }
+        
+        // 相棒システム更新
+        if (this.companionSystem) {
+            this.companionSystem.update(delta);
+        }
 
         // レンダリング
         this.renderer.render(this.scene, this.camera);
@@ -967,5 +980,38 @@ export class Game {
             document.body.removeChild(notification);
             document.head.removeChild(style);
         }, 2000);
+    }
+    
+    // 相棒システム用のイベントハンドラー
+    onEnemyDefeated(enemy) {
+        if (this.companionSystem && this.companionSystem.isActive) {
+            this.companionSystem.onCombatStart();
+        }
+    }
+    
+    onBossEncounter(boss) {
+        if (this.companionSystem && this.companionSystem.isActive) {
+            this.companionSystem.onBossEncounter();
+        }
+    }
+    
+    onBossDefeated(boss) {
+        if (this.companionSystem && this.companionSystem.isActive) {
+            this.companionSystem.onBossDefeat();
+        }
+    }
+    
+    onPlanetDiscovered(planet) {
+        if (this.companionSystem && this.companionSystem.isActive) {
+            this.companionSystem.onDiscovery();
+        }
+    }
+    
+    // 酒場イベントトリガー（初回遭遇時）
+    triggerTavernMeeting() {
+        if (this.tavernScene && this.companionSystem) {
+            const dialogueData = this.companionSystem.triggerTavernMeeting();
+            this.tavernScene.show(dialogueData);
+        }
     }
 }

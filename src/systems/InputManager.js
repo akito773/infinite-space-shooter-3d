@@ -81,6 +81,12 @@ export class InputManager {
                 window.game.bossSpawnSystem.forceSpawnRaidBoss();
                 console.log('Raid Boss spawned!');
             }
+            
+            // 酒場訪問（Tキー）
+            if (e.key.toLowerCase() === 't' && window.game && window.game.triggerTavernMeeting) {
+                window.game.triggerTavernMeeting();
+                console.log('Tavern meeting triggered!');
+            }
         });
 
         document.addEventListener('keyup', (e) => {

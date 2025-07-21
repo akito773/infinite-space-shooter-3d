@@ -261,7 +261,7 @@ export class AdvisorUI {
         
         // 効果音
         if (this.game.systems.sound) {
-            this.game.systems.sound.playSound('advisor_alert');
+            this.game.systems.sound.play('success');
         }
         
         // 一定時間後に自動で閉じる（緊急でない場合）
