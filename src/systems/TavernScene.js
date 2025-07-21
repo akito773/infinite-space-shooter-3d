@@ -60,7 +60,7 @@ export class TavernScene {
             bottom: 50px;
             width: 200px;
             height: 250px;
-            background: url('./assets/luna_avatar.png') center center / cover,
+            background: url('assets/luna_avatar.png') center center / cover,
                        linear-gradient(45deg, #ff6b9d, #c44569);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(255, 107, 157, 0.5);

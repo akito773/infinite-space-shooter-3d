@@ -46,7 +46,7 @@ export class ZoneManager {
                 planetData: {
                     radius: 50,
                     color: 0x4169E1,
-                    texture: './assets/earth_texture.png',
+                    texture: 'assets/earth_texture.png',
                     atmosphere: true,
                     dayLength: 24,
                     gravity: 1.0,

@@ -226,11 +226,15 @@ export class LandingSystem {
     }
     
     showLandingMenu() {
-        // 惑星の場合は惑星着陸システムを起動
-        if (this.currentTarget.type === 'planet') {
+        // 地球や補給基地など、特定の場所は従来のメニューを使用
+        const exemptPlanets = ['地球', 'Earth', '補給基地', 'Supply Station'];
+        const isExemptPlanet = exemptPlanets.includes(this.currentTarget.name);
+        
+        if (this.currentTarget.type === 'planet' && !isExemptPlanet) {
+            // 一般的な惑星は惑星着陸システムを起動
             this.loadPlanetLandingSystem();
         } else {
-            // ステーションの場合は従来のメニュー
+            // 地球、ステーション、補給基地は従来のメニュー
             this.showStationMenu();
         }
     }
@@ -356,9 +360,16 @@ export class LandingSystem {
             }
             
             // 経験値を追加
-            if (data.resources.experience && this.game.skillSystem) {
-                this.game.skillSystem.addExperience(data.resources.experience);
-                console.log(`Gained ${data.resources.experience} experience`);
+            if (data.resources.experience) {
+                if (this.game.skillSystem && typeof this.game.skillSystem.addExperience === 'function') {
+                    this.game.skillSystem.addExperience(data.resources.experience);
+                    console.log(`Gained ${data.resources.experience} experience`);
+                } else if (this.game.skillTreeSystem && typeof this.game.skillTreeSystem.addExperience === 'function') {
+                    this.game.skillTreeSystem.addExperience(data.resources.experience);
+                    console.log(`Gained ${data.resources.experience} experience`);
+                } else {
+                    console.log(`Experience gained: ${data.resources.experience} (no skill system available)`);
+                }
             }
         }
         
