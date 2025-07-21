@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惑星着陸システム - ゲームガイド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;
+            border-bottom: 3px solid #6366f1;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #a5b4fc;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        h2 {
+            color: #6366f1;
+            margin-bottom: 20px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h3 {
+            color: #8b5cf6;
+            margin: 20px 0 15px 0;
+            font-size: 1.5em;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .feature-card h4 {
+            color: #a5b4fc;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .controls-table {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .controls-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .controls-table th {
+            background: rgba(99, 102, 241, 0.2);
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .controls-table td {
+            padding: 12px 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls-table tr:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+        
+        .resource-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .building-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .building-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+        
+        .building-icon {
+            font-size: 2em;
+            min-width: 40px;
+        }
+        
+        .building-info h5 {
+            color: #a5b4fc;
+            margin-bottom: 5px;
+        }
+        
+        .building-info p {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+        
+        .phase-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .phase-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .phase-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .phase-content {
+            flex: 1;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .tips-box {
+            background: rgba(74, 222, 128, 0.1);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tips-box h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .warning-box {
+            background: rgba(251, 113, 133, 0.1);
+            border: 2px solid rgba(251, 113, 133, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-box h4 {
+            color: #fb7185;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #64748b;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-table {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🌍 惑星着陸システム</h1>
+            <p class="subtitle">Infinite Space Shooter 3D - 惑星開発モード完全ガイド</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ゲーム概要 -->
+        <section class="section">
+            <h2>🎮 ゲーム概要</h2>
+            <p>惑星着陸システムは、宇宙空間での戦闘から惑星に着陸し、資源採掘と都市建設を行うハイブリッド型ゲームモードです。</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏗️ 都市建設</h4>
+                    <p>7種類の建物を戦略的に配置し、効率的な惑星開発を目指します。エネルギー管理と資源バランスが成功の鍵です。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 惑星探索</h4>
+                    <p>3Dキャラクターを操作して惑星表面を探索。貴重な資源ノードを発見し、収集しましょう。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⛏️ 地下採掘</h4>
+                    <p>2.5D横スクロールの地下エリアで、希少資源を採掘。ただし、危険なハザードにご注意を！</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔬 研究開発</h4>
+                    <p>15種類の技術を研究して、生産効率や探索能力を向上。戦略的な技術選択が重要です。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 操作方法 -->
+        <section class="section">
+            <h2>🎯 操作方法</h2>
+            
+            <h3>基本操作</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>キー/マウス</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>カメラ回転</td>
+                            <td>マウス左ドラッグ</td>
+                            <td>視点を回転させます</td>
+                        </tr>
+                        <tr>
+                            <td>カメラ移動</td>
+                            <td>マウス右ドラッグ</td>
+                            <td>カメラ位置を移動します</td>
+                        </tr>
+                        <tr>
+                            <td>ズーム</td>
+                            <td>マウスホイール</td>
+                            <td>拡大/縮小します</td>
+                        </tr>
+                        <tr>
+                            <td>建物選択</td>
+                            <td>左クリック</td>
+                            <td>建物を選択して情報を表示</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3>探索モード</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>キー</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>探索モード切替</td>
+                            <td><span class="key">Tab</span></td>
+                            <td>探索モードのON/OFF</td>
+                        </tr>
+                        <tr>
+                            <td>移動</td>
+                            <td><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></td>
+                            <td>キャラクターを移動</td>
+                        </tr>
+                        <tr>
+                            <td>走る</td>
+                            <td><span class="key">Shift</span></td>
+                            <td>移動速度1.5倍</td>
+                        </tr>
+                        <tr>
+                            <td>収集</td>
+                            <td><span class="key">E</span></td>
+                            <td>近くの資源を収集</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3>その他</h3>
+            <div class="controls-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>操作</th>
+                            <th>キー</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>地下エリア</td>
+                            <td><span class="key">U</span></td>
+                            <td>地下エリアへ移動</td>
+                        </tr>
+                        <tr>
+                            <td>セーブメニュー</td>
+                            <td><span class="key">Esc</span></td>
+                            <td>セーブ/ロード画面を開く</td>
+                        </tr>
+                        <tr>
+                            <td>クイックセーブ</td>
+                            <td><span class="key">F5</span></td>
+                            <td>現在の進行状況を保存</td>
+                        </tr>
+                        <tr>
+                            <td>クイックロード</td>
+                            <td><span class="key">F9</span></td>
+                            <td>最後のセーブを読み込み</td>
+                        </tr>
+                        <tr>
+                            <td>デバッグパネル</td>
+                            <td><span class="key">F12</span></td>
+                            <td>開発者用デバッグ情報</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 資源システム -->
+        <section class="section">
+            <h2>💎 資源システム</h2>
+            <p>惑星開発には5種類の資源が必要です。各資源は異なる用途があり、バランスよく管理することが重要です。</p>
+            
+            <div class="building-list">
+                <div class="building-item">
+                    <span class="resource-icon">💰</span>
+                    <div class="building-info">
+                        <h5>クレジット</h5>
+                        <p>基本通貨。建物の建設や維持に必要。人口増加でボーナス獲得。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">🔩</span>
+                    <div class="building-info">
+                        <h5>鉄</h5>
+                        <p>建設資材。採掘施設で生産。高レベル建物に大量必要。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">⚡</span>
+                    <div class="building-info">
+                        <h5>エネルギー</h5>
+                        <p>全施設の稼働に必要。発電所で生産。収支管理が最重要。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">💎</span>
+                    <div class="building-info">
+                        <h5>クリスタル</h5>
+                        <p>高度技術に必要な希少資源。地下や特殊ノードで入手。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">🔬</span>
+                    <div class="building-info">
+                        <h5>研究ポイント</h5>
+                        <p>新技術の開発に使用。研究所で生産。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tips-box">
+                <h4>💡 資源管理のコツ</h4>
+                <ul>
+                    <li>エネルギー収支は常にプラスを維持しましょう</li>
+                    <li>資源上限に達すると生産が無駄になります。適時アップグレードを</li>
+                    <li>人口を増やすとクレジット生産にボーナスが付きます</li>
+                    <li>地下の希少資源は危険と隣り合わせ。準備を整えてから挑戦を</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 建物一覧 -->
+        <section class="section">
+            <h2>🏢 建物一覧</h2>
+            
+            <div class="building-list">
+                <div class="building-item">
+                    <span class="building-icon">⚡</span>
+                    <div class="building-info">
+                        <h5>発電所</h5>
+                        <p>エネルギーを生産。全ての基盤となる最重要施設。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">⛏️</span>
+                    <div class="building-info">
+                        <h5>採掘施設</h5>
+                        <p>鉄を生産。資源ノード近くで効率2倍。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">🏠</span>
+                    <div class="building-info">
+                        <h5>居住区</h5>
+                        <p>人口と労働力を提供。クレジット生産にボーナス。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">🔬</span>
+                    <div class="building-info">
+                        <h5>研究所</h5>
+                        <p>研究ポイントを生産。新技術の開発に必須。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">🔫</span>
+                    <div class="building-info">
+                        <h5>防衛タレット</h5>
+                        <p>惑星を防衛。将来の脅威に備えて。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">💎</span>
+                    <div class="building-info">
+                        <h5>クリスタル抽出機</h5>
+                        <p>クリスタルを採掘。専用ノードが必要。</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="building-icon">📡</span>
+                    <div class="building-info">
+                        <h5>通信タワー</h5>
+                        <p>資源探知と建設速度向上。効率化の要。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <h4>⚠️ 建設時の注意</h4>
+                <ul>
+                    <li>建物はグリッドに沿って配置されます</li>
+                    <li>赤い表示は建設不可を意味します</li>
+                    <li>一部の建物は特定の条件（資源ノード近くなど）が必要です</li>
+                    <li>建設中は右クリックでキャンセル可能</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- チュートリアルシステム -->
+        <section class="section">
+            <h2>📚 段階的学習システム</h2>
+            <p>ゲームの複雑さを緩和するため、機能は段階的に解放されます。</p>
+            
+            <div class="phase-timeline">
+                <div class="phase-item">
+                    <div class="phase-number">1</div>
+                    <div class="phase-content">
+                        <h4>基本建設</h4>
+                        <p>発電所と採掘施設の建設。エネルギー管理の基礎を学びます。</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">2</div>
+                    <div class="phase-content">
+                        <h4>資源管理</h4>
+                        <p>居住区が解放。人口管理とエネルギーバランスを習得。</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">3</div>
+                    <div class="phase-content">
+                        <h4>探索</h4>
+                        <p>3D探索モード解放。資源ノードの収集方法を学習。</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">4</div>
+                    <div class="phase-content">
+                        <h4>地下探索</h4>
+                        <p>危険な地下エリアへ。希少資源とリスク管理。</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">5</div>
+                    <div class="phase-content">
+                        <h4>研究</h4>
+                        <p>研究システム解放。技術開発で効率を大幅向上。</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">6</div>
+                    <div class="phase-content">
+                        <h4>高度な開発</h4>
+                        <p>全機能解放。自由な惑星開発が可能に。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 研究ツリー -->
+        <section class="section">
+            <h2>🔬 研究ツリー</h2>
+            <p>5つのカテゴリで15種類の技術を研究できます。</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>⚙️ 生産技術</h4>
+                    <ul>
+                        <li>採掘効率向上</li>
+                        <li>エネルギー最適化</li>
+                        <li>クリスタル処理技術</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🏗️ 建設技術</h4>
+                    <ul>
+                        <li>高速建設</li>
+                        <li>高度建材</li>
+                        <li>建物レベル上限増加</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 探索技術</h4>
+                    <ul>
+                        <li>地下マッピング</li>
+                        <li>ハザード保護</li>
+                        <li>探索装備（移動速度向上）</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ 防衛技術</h4>
+                    <ul>
+                        <li>タレット強化</li>
+                        <li>シールド技術</li>
+                        <li>自動修復システム</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🔬 高度技術</h4>
+                    <ul>
+                        <li>AI自動化</li>
+                        <li>量子ストレージ</li>
+                        <li>惑星ネットワーク</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 地下エリア -->
+        <section class="section">
+            <h2>⛏️ 地下エリアガイド</h2>
+            
+            <h3>基本情報</h3>
+            <ul>
+                <li>2.5D横スクロール形式</li>
+                <li>5層構造（深くなるほど希少資源）</li>
+                <li>体力システム（HP: 100）</li>
+                <li>ハザード：毒ガス（-10HP/秒）、溶岩（-20HP/秒）</li>
+            </ul>
+            
+            <h3>地下限定資源</h3>
+            <div class="building-list">
+                <div class="building-item">
+                    <span class="resource-icon">💎</span>
+                    <div class="building-info">
+                        <h5>クリスタル</h5>
+                        <p>価値: 50 | 八面体の形状</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">🟡</span>
+                    <div class="building-info">
+                        <h5>レアメタル</h5>
+                        <p>価値: 30（鉄×2相当）| 金色の鉱石</p>
+                    </div>
+                </div>
+                <div class="building-item">
+                    <span class="resource-icon">🟣</span>
+                    <div class="building-info">
+                        <h5>エネルギーコア</h5>
+                        <p>価値: 100 | 紫色の球体</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <h4>⚠️ 地下探索の注意点</h4>
+                <ul>
+                    <li>体力が0になると自動的に地上へ帰還します</li>
+                    <li>毒ガスエリアは緑色の霧で識別できます</li>
+                    <li>はしごで層間を移動（W/Sキー）</li>
+                    <li>研究「ハザード保護」でダメージを30%軽減可能</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 効率的なプレイのコツ -->
+        <section class="section">
+            <h2>🎯 効率的なプレイのコツ</h2>
+            
+            <div class="tips-box">
+                <h4>💡 初心者向けアドバイス</h4>
+                <ol>
+                    <li><strong>エネルギー優先：</strong>最初は発電所を2-3個建設し、エネルギーを安定させましょう</li>
+                    <li><strong>資源ノード活用：</strong>採掘施設は必ず鉄ノードの近くに建設（効率2倍）</li>
+                    <li><strong>段階的拡張：</strong>チュートリアルに従って、少しずつ機能を習得</li>
+                    <li><strong>定期セーブ：</strong>F5キーで定期的にセーブする習慣を</li>
+                    <li><strong>研究計画：</strong>まず「採掘効率」と「エネルギー最適化」がおすすめ</li>
+                </ol>
+            </div>
+            
+            <div class="tips-box">
+                <h4>🚀 上級者向けテクニック</h4>
+                <ul>
+                    <li><strong>建物配置最適化：</strong>通信タワーの効果範囲内に生産施設を集中配置</li>
+                    <li><strong>地下リスク管理：</strong>体力60以下になったら即帰還。欲張りは禁物</li>
+                    <li><strong>研究キュー活用：</strong>複数の研究をキューに入れて効率化</li>
+                    <li><strong>資源バランス：</strong>人口増加によるクレジットボーナスを最大活用</li>
+                    <li><strong>探索ルート：</strong>資源ノードの再生成パターンを把握して効率的に収集</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 目標とマイルストーン -->
+        <section class="section">
+            <h2>🏆 目標とマイルストーン</h2>
+            
+            <h3>マイルストーン一覧</h3>
+            <div class="phase-timeline">
+                <div class="phase-item">
+                    <div class="phase-number">Lv1</div>
+                    <div class="phase-content">
+                        <h4>開拓者</h4>
+                        <p>建物3個、資源500個 → 報酬：2000クレジット、発電所解放</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">Lv2</div>
+                    <div class="phase-content">
+                        <h4>建設者</h4>
+                        <p>建物8個、資源2000個、電力50 → 報酬：5000クレジット、研究所解放</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">Lv3</div>
+                    <div class="phase-content">
+                        <h4>開発者</h4>
+                        <p>建物15個、資源10000個、研究100 → 報酬：10000クレジット、防衛施設解放</p>
+                    </div>
+                </div>
+                <div class="phase-item">
+                    <div class="phase-number">Lv4</div>
+                    <div class="phase-content">
+                        <h4>惑星管理者</h4>
+                        <p>建物25個、資源50000個、人口200 → 報酬：25000クレジット、高度施設解放</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- トラブルシューティング -->
+        <section class="section">
+            <h2>❓ よくある質問</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Q: エネルギーが常に不足します</h4>
+                    <p>A: 発電所を追加建設しましょう。採掘施設1つにつき発電所1つが目安です。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Q: 建物が建設できません</h4>
+                    <p>A: 赤い表示は障害物か制限違反です。場所を変えるか、必要な条件を確認してください。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Q: 地下で即死してしまいます</h4>
+                    <p>A: 緑の霧（毒ガス）を避けて移動しましょう。研究で防護を強化することも可能です。</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Q: 労働力が不足しています</h4>
+                    <p>A: 居住区を建設して人口を増やしましょう。1つの居住区で5人の労働力を提供します。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 今後のアップデート -->
+        <section class="section">
+            <h2>🔮 今後の展望</h2>
+            <p>開発中の機能や、将来的な拡張予定：</p>
+            <ul>
+                <li>メインゲームとの完全統合</li>
+                <li>惑星間の資源輸送システム</li>
+                <li>NPCとの取引システム</li>
+                <li>PvP惑星侵略モード</li>
+                <li>より複雑なクエストシステム</li>
+                <li>天候と環境災害</li>
+            </ul>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Infinite Space Shooter 3D - Planet Landing System</p>
+            <p>Version 0.1.0 | Created with Three.js</p>
+        </div>
+    </footer>
+</body>
+</html>

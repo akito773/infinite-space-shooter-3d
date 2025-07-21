@@ -1,0 +1,168 @@
+{
+  "version": "1.0",
+  "type": "player_ship",
+  "template": true,
+  "name": "基本戦闘機テンプレート",
+  "description": "標準的な戦闘機の基本テンプレート",
+  "data": {
+    "basic": {
+      "health": 100,
+      "maxHealth": 100,
+      "shield": 50,
+      "armor": 0,
+      "speed": 50,
+      "boostSpeed": 100,
+      "boostDuration": 2000,
+      "turnRate": 2.0,
+      "energy": 100,
+      "maxEnergy": 100,
+      "energyRecharge": 25,
+      "damageMultiplier": 1.0,
+      "criticalChance": 0.1,
+      "size": {"x": 4, "y": 2, "z": 8},
+      "hitboxRadius": 3,
+      "mass": 1000
+    },
+    
+    "model": {
+      "hull": {
+        "type": "fighter",
+        "scale": 1.0,
+        "material": "metal",
+        "color": 4473924,
+        "texture": "textures/hull_metal.jpg"
+      },
+      
+      "parts": [
+        {
+          "type": "wing",
+          "position": {"x": -2, "y": 0, "z": 0},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "scale": {"x": 1, "y": 1, "z": 1},
+          "model": "models/wing_basic.glb",
+          "material": {
+            "color": 4473924,
+            "metalness": 0.8,
+            "roughness": 0.3
+          }
+        },
+        {
+          "type": "wing",
+          "position": {"x": 2, "y": 0, "z": 0},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "scale": {"x": -1, "y": 1, "z": 1},
+          "model": "models/wing_basic.glb",
+          "material": {
+            "color": 4473924,
+            "metalness": 0.8,
+            "roughness": 0.3
+          }
+        },
+        {
+          "type": "engine",
+          "position": {"x": 0, "y": 0, "z": 3},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "scale": {"x": 1, "y": 1, "z": 1},
+          "model": "models/engine_basic.glb",
+          "material": {
+            "color": 2236962,
+            "emissive": 1118481,
+            "emissiveIntensity": 0.3
+          }
+        },
+        {
+          "type": "cockpit",
+          "position": {"x": 0, "y": 0.5, "z": -2},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "scale": {"x": 1, "y": 1, "z": 1},
+          "model": "models/cockpit_basic.glb",
+          "material": {
+            "color": 657930,
+            "transparent": true,
+            "opacity": 0.7
+          }
+        }
+      ],
+      
+      "effects": {
+        "engineTrail": {
+          "color": 65535,
+          "intensity": 0.8
+        },
+        "shield": {
+          "color": 255,
+          "opacity": 0.3
+        },
+        "damage": {
+          "sparks": true,
+          "smoke": true
+        }
+      }
+    },
+    
+    "weaponMounts": [
+      {
+        "id": "primary_left",
+        "type": "primary",
+        "position": {"x": -1.5, "y": 0, "z": -3},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "restrictions": {
+          "maxSize": 1.5,
+          "allowedTypes": ["laser", "projectile"],
+          "energyCost": 1.0
+        }
+      },
+      {
+        "id": "primary_right",
+        "type": "primary",
+        "position": {"x": 1.5, "y": 0, "z": -3},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "restrictions": {
+          "maxSize": 1.5,
+          "allowedTypes": ["laser", "projectile"],
+          "energyCost": 1.0
+        }
+      },
+      {
+        "id": "secondary_center",
+        "type": "secondary",
+        "position": {"x": 0, "y": -0.5, "z": -2},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "restrictions": {
+          "maxSize": 2.0,
+          "allowedTypes": ["missile", "special"],
+          "energyCost": 2.0
+        }
+      }
+    ],
+    
+    "loadout": {
+      "primaryWeapons": [
+        {"mountId": "primary_left", "weaponId": "pulse_laser"},
+        {"mountId": "primary_right", "weaponId": "pulse_laser"}
+      ],
+      "secondaryWeapons": [
+        {"mountId": "secondary_center", "weaponId": "homing_missile"}
+      ]
+    },
+    
+    "customization": {
+      "colors": {
+        "primary": 4473924,
+        "secondary": 2236962,
+        "accent": 65535
+      },
+      "decals": [],
+      "modifications": []
+    }
+  },
+  
+  "balanceInfo": {
+    "overallRating": 7,
+    "balanceScore": 8.5,
+    "complexity": 3,
+    "recommendedFor": "beginner",
+    "strengths": ["balanced", "reliable", "easy_to_use"],
+    "weaknesses": ["average_damage", "standard_speed"]
+  }
+}

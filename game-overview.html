@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Space Shooter 3D - ゲーム概要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(135deg, #000033 0%, #000066 100%);
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5em;
+            font-weight: 900;
+            color: #00ffff;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            color: #ffaa00;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* コンテナ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* セクション */
+        .section {
+            padding: 60px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            color: #00ffff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .section h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8em;
+            color: #ffaa00;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+        
+        /* ゲーム概要 */
+        .game-intro {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        
+        .intro-text {
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+        
+        .intro-image {
+            background: linear-gradient(135deg, #001133, #003366);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .intro-image::before {
+            content: '🚀';
+            font-size: 100px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.1;
+        }
+        
+        /* 特徴カード */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, rgba(0, 100, 200, 0.2), rgba(0, 50, 100, 0.2));
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+            border-color: #00ffff;
+        }
+        
+        .feature-card h4 {
+            color: #00ffff;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-card .icon {
+            font-size: 1.5em;
+        }
+        
+        /* 操作方法テーブル */
+        .controls-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 30px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        
+        .controls-table th,
+        .controls-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls-table th {
+            background: linear-gradient(135deg, #004488, #0066cc);
+            color: #ffffff;
+            font-weight: bold;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .controls-table tr:nth-child(even) {
+            background: rgba(0, 100, 200, 0.1);
+        }
+        
+        .controls-table tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .key {
+            display: inline-block;
+            background: #0088ff;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 0 2px;
+        }
+        
+        /* ゲームシステム */
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .system-box {
+            background: rgba(0, 50, 100, 0.2);
+            border: 1px solid rgba(0, 200, 255, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+        }
+        
+        .system-box h4 {
+            color: #ffaa00;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .system-box ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .system-box li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .system-box li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #00ffff;
+        }
+        
+        /* 開発情報 */
+        .dev-info {
+            background: linear-gradient(135deg, rgba(50, 0, 100, 0.2), rgba(100, 0, 50, 0.2));
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .tech-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-badge:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .game-intro {
+                grid-template-columns: 1fr;
+            }
+            
+            .system-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* スクロールアニメーション */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* フッター */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(to bottom, transparent, #000033);
+            margin-top: 60px;
+        }
+        
+        .footer p {
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>INFINITE SPACE SHOOTER 3D</h1>
+        <p>無限の宇宙を舞台にした3Dシューティングゲーム</p>
+    </header>
+
+    <main>
+        <!-- ゲーム概要 -->
+        <section class="section">
+            <div class="container">
+                <h2>🚀 ゲーム解説</h2>
+                <div class="game-intro">
+                    <div class="intro-text">
+                        <p>
+                            西暦2384年、人類は太陽系全域への進出を果たしましたが、
+                            未知の敵対勢力が現れ、辺境の植民地が次々と襲撃されています。
+                        </p>
+                        <p>
+                            あなたは新人パイロットとして、最新鋭の戦闘機に乗り込み、
+                            人類の生存をかけた戦いに身を投じます。
+                        </p>
+                        <p>
+                            広大な宇宙空間を自由に探索し、敵を撃破し、新たな惑星を発見し、
+                            人類の未来を守り抜いてください。
+                        </p>
+                    </div>
+                    <div class="intro-image">
+                        <h3>主な要素</h3>
+                        <ul style="text-align: left; list-style: none;">
+                            <li>✨ 3D空間での自由な戦闘</li>
+                            <li>🌍 惑星探索と着陸</li>
+                            <li>💰 経済システム</li>
+                            <li>🔧 装備カスタマイズ</li>
+                            <li>📜 ストーリーミッション</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主な特徴 -->
+        <section class="section">
+            <div class="container">
+                <h2>✨ 主な特徴</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4><span class="icon">🎮</span>直感的な3D戦闘</h4>
+                        <p>
+                            マウスとキーボードで直感的に操作できる3D空間戦闘。
+                            360度全方向からの攻撃に対応し、スリリングな戦闘を体験できます。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="icon">🌌</span>広大な宇宙の探索</h4>
+                        <p>
+                            地球、火星、木星など実在の惑星から、未知の惑星まで。
+                            Deep Spaceスキャンで新たな発見を。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="icon">🏗️</span>惑星開発要素</h4>
+                        <p>
+                            惑星に着陸して基地を建設。資源採掘、研究施設、防衛システムなど、
+                            自分だけの宇宙帝国を築き上げましょう。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="icon">⚔️</span>多彩な武器・装備</h4>
+                        <p>
+                            レーザー、プラズマ、ミサイルなど多彩な武器。
+                            シールド、エンジン、特殊装備でカスタマイズ。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="icon">📖</span>没入感のあるストーリー</h4>
+                        <p>
+                            NPCとの会話、選択肢による分岐、サイドクエスト。
+                            あなたの選択が宇宙の運命を決めます。
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="icon">🎨</span>美しいビジュアル</h4>
+                        <p>
+                            Three.jsによる美しい3Dグラフィックス。
+                            惑星のテクスチャ、機体のメタリックな質感、宇宙の壮大さを表現。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 操作方法 -->
+        <section class="section">
+            <div class="container">
+                <h2>🎮 操作方法</h2>
+                
+                <h3>基本操作</h3>
+                <table class="controls-table">
+                    <thead>
+                        <tr>
+                            <th>キー</th>
+                            <th>操作</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span></td>
+                            <td>移動</td>
+                            <td>前進、左移動、後退、右移動</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">マウス移動</span></td>
+                            <td>照準操作</td>
+                            <td>視点と照準の移動</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">左クリック</span> / <span class="key">Space</span></td>
+                            <td>射撃</td>
+                            <td>主武器で攻撃</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">Shift</span></td>
+                            <td>ブースト</td>
+                            <td>移動速度2倍</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">Q</span> / <span class="key">E</span></td>
+                            <td>ロール回転</td>
+                            <td>機体を左右に回転</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>システム操作</h3>
+                <table class="controls-table">
+                    <thead>
+                        <tr>
+                            <th>キー</th>
+                            <th>操作</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="key">I</span></td>
+                            <td>インベントリ</td>
+                            <td>装備画面を開く</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">G</span></td>
+                            <td>ゲームガイド</td>
+                            <td>詳細なヘルプを表示</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">H</span></td>
+                            <td>ヘルプ</td>
+                            <td>操作方法の確認</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">F</span></td>
+                            <td>インタラクト</td>
+                            <td>ステーション/ワープゲートと対話</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">S</span></td>
+                            <td>Deep Spaceスキャン</td>
+                            <td>新しい惑星や遺跡を探索</td>
+                        </tr>
+                        <tr>
+                            <td><span class="key">+</span> / <span class="key">-</span></td>
+                            <td>ミニマップ拡大縮小</td>
+                            <td>マップの表示範囲を調整</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ゲームシステム -->
+        <section class="section">
+            <div class="container">
+                <h2>⚙️ ゲームシステム</h2>
+                
+                <div class="system-grid">
+                    <div class="system-box">
+                        <h4>💰 経済システム</h4>
+                        <ul>
+                            <li>敵を倒してクレジット獲得（スコアの50%）</li>
+                            <li>ミッション報酬（500～10,000クレジット）</li>
+                            <li>新惑星発見ボーナス</li>
+                            <li>ステーションでの買い物</li>
+                            <li>装備の売買（実装予定）</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="system-box">
+                        <h4>🔧 装備システム</h4>
+                        <ul>
+                            <li>武器スロット（レーザー、プラズマ、ミサイル）</li>
+                            <li>シールドスロット（防御力強化）</li>
+                            <li>エンジンスロット（速度・機動性向上）</li>
+                            <li>特殊装備スロット（スキャナー等）</li>
+                            <li>アイテムドロップシステム</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="system-box">
+                        <h4>🌍 探索要素</h4>
+                        <ul>
+                            <li>太陽系の各惑星エリア</li>
+                            <li>隠された惑星の発見</li>
+                            <li>古代遺跡の探索</li>
+                            <li>小惑星帯での採掘</li>
+                            <li>ランダムイベント発生</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="system-box">
+                        <h4>📜 ミッションシステム</h4>
+                        <ul>
+                            <li>メインストーリーミッション</li>
+                            <li>サイドクエスト</li>
+                            <li>デイリーミッション（実装予定）</li>
+                            <li>NPCからの依頼</li>
+                            <li>実績システム（実装予定）</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>🏗️ 惑星着陸後の要素</h3>
+                <div class="system-box" style="margin-top: 30px;">
+                    <p>
+                        惑星に着陸すると、別のゲームモードに切り替わります。
+                        地上では基地建設、資源採掘、研究開発などの要素が楽しめます。
+                    </p>
+                    <ul>
+                        <li>基地建設シミュレーション</li>
+                        <li>資源管理と生産チェーン</li>
+                        <li>防衛施設の構築</li>
+                        <li>技術研究ツリー</li>
+                        <li>地上戦闘（実装予定）</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 開発情報 -->
+        <section class="section">
+            <div class="container">
+                <h2>💻 開発情報</h2>
+                
+                <div class="dev-info">
+                    <h4>使用技術</h4>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Three.js</span>
+                        <span class="tech-badge">JavaScript ES6+</span>
+                        <span class="tech-badge">Vite</span>
+                        <span class="tech-badge">WebGL</span>
+                        <span class="tech-badge">HTML5 Canvas</span>
+                        <span class="tech-badge">CSS3</span>
+                    </div>
+                    
+                    <h4 style="margin-top: 30px;">開発の特徴</h4>
+                    <ul style="list-style: none; margin-top: 15px;">
+                        <li>✅ モジュール化されたコード構造</li>
+                        <li>✅ パフォーマンス最適化（メモリ管理、LOD）</li>
+                        <li>✅ 日本語完全対応インターフェース</li>
+                        <li>✅ レスポンシブデザイン（モバイル対応準備）</li>
+                        <li>✅ 拡張可能なシステム設計</li>
+                    </ul>
+                    
+                    <h4 style="margin-top: 30px;">今後の実装予定</h4>
+                    <ul style="list-style: none; margin-top: 15px;">
+                        <li>🔄 マルチプレイヤー対応</li>
+                        <li>🔄 より多くの惑星とエリア</li>
+                        <li>🔄 実績システム</li>
+                        <li>🔄 より高度なAI敵</li>
+                        <li>🔄 MOD対応</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 Infinite Space Shooter 3D - Created with Three.js and Claude</p>
+        </div>
+    </footer>
+
+    <script>
+        // スクロールアニメーション
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // すべてのセクションを監視
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>

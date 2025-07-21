@@ -1,0 +1,329 @@
+{
+  "version": "1.0",
+  "type": "boss_ship",
+  "template": true,
+  "name": "巨大戦艦テンプレート",
+  "description": "標準的なボス戦艦の基本テンプレート",
+  "data": {
+    "basic": {
+      "name": "タイタン級戦艦",
+      "type": "battleship",
+      "size": "massive",
+      "health": 5000,
+      "phases": 3,
+      "difficulty": "hard",
+      "reward": {
+        "score": 10000,
+        "credits": 5000,
+        "items": ["rare_crystal", "boss_weapon_fragment"]
+      }
+    },
+    
+    "structure": {
+      "mainHull": {
+        "model": "models/battleship_hull.glb",
+        "scale": {"x": 5, "y": 3, "z": 8},
+        "materials": [
+          {
+            "name": "hull_armor",
+            "color": 3355443,
+            "metalness": 0.9,
+            "roughness": 0.4
+          }
+        ],
+        "hitboxes": [
+          {
+            "type": "box",
+            "position": {"x": 0, "y": 0, "z": 0},
+            "size": {"x": 5, "y": 3, "z": 8}
+          }
+        ]
+      },
+      
+      "destructibleParts": [
+        {
+          "id": "left_main_gun",
+          "name": "左主砲",
+          "position": {"x": -3, "y": 1, "z": -2},
+          "health": 800,
+          "model": "models/main_gun_turret.glb",
+          "onDestroy": {
+            "disableWeapons": ["main_gun_left"],
+            "reduceDamage": 0.3,
+            "unlockWeakpoint": null,
+            "triggerPhase": null
+          }
+        },
+        {
+          "id": "right_main_gun",
+          "name": "右主砲",
+          "position": {"x": 3, "y": 1, "z": -2},
+          "health": 800,
+          "model": "models/main_gun_turret.glb",
+          "onDestroy": {
+            "disableWeapons": ["main_gun_right"],
+            "reduceDamage": 0.3,
+            "unlockWeakpoint": null,
+            "triggerPhase": null
+          }
+        },
+        {
+          "id": "shield_generator",
+          "name": "シールド発生装置",
+          "position": {"x": 0, "y": 2, "z": 1},
+          "health": 1000,
+          "model": "models/shield_generator.glb",
+          "onDestroy": {
+            "disableWeapons": [],
+            "reduceDamage": 0,
+            "unlockWeakpoint": "reactor_core",
+            "triggerPhase": 2
+          }
+        },
+        {
+          "id": "reactor_core",
+          "name": "リアクターコア",
+          "position": {"x": 0, "y": 0, "z": 2},
+          "health": 1500,
+          "model": "models/reactor_core.glb",
+          "onDestroy": {
+            "disableWeapons": ["all"],
+            "reduceDamage": 1.0,
+            "unlockWeakpoint": null,
+            "triggerPhase": 3
+          },
+          "locked": true,
+          "unlockCondition": "shield_generator_destroyed"
+        }
+      ],
+      
+      "weaponSystems": [
+        {
+          "id": "main_gun_left",
+          "name": "左主砲",
+          "type": "main_gun",
+          "position": {"x": -3, "y": 1, "z": -2},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "attackPattern": {
+            "damage": 150,
+            "fireRate": 3000,
+            "burstCount": 1,
+            "spread": 0,
+            "targetingType": "predictive",
+            "cooldown": 5000,
+            "projectile": {
+              "speed": 80,
+              "size": 1.5,
+              "color": 16711680,
+              "trail": true
+            }
+          }
+        },
+        {
+          "id": "main_gun_right",
+          "name": "右主砲",
+          "type": "main_gun",
+          "position": {"x": 3, "y": 1, "z": -2},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "attackPattern": {
+            "damage": 150,
+            "fireRate": 3000,
+            "burstCount": 1,
+            "spread": 0,
+            "targetingType": "predictive",
+            "cooldown": 5000,
+            "projectile": {
+              "speed": 80,
+              "size": 1.5,
+              "color": 16711680,
+              "trail": true
+            }
+          }
+        },
+        {
+          "id": "secondary_guns",
+          "name": "副砲群",
+          "type": "secondary_gun",
+          "position": {"x": 0, "y": 0, "z": 0},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "attackPattern": {
+            "damage": 40,
+            "fireRate": 800,
+            "burstCount": 3,
+            "spread": 15,
+            "targetingType": "direct",
+            "cooldown": 2000,
+            "projectile": {
+              "speed": 120,
+              "size": 0.5,
+              "color": 16776960,
+              "trail": false
+            }
+          }
+        },
+        {
+          "id": "missile_launcher",
+          "name": "ミサイルランチャー",
+          "type": "missile_launcher",
+          "position": {"x": 0, "y": -1, "z": 1},
+          "rotation": {"x": 0, "y": 0, "z": 0},
+          "attackPattern": {
+            "damage": 200,
+            "fireRate": 5000,
+            "burstCount": 4,
+            "spread": 30,
+            "targetingType": "homing",
+            "cooldown": 8000,
+            "projectile": {
+              "speed": 60,
+              "size": 0.8,
+              "color": 255,
+              "trail": true,
+              "homing": true,
+              "homingStrength": 0.05
+            }
+          }
+        }
+      ]
+    },
+    
+    "phases": [
+      {
+        "id": 1,
+        "healthThreshold": 0.75,
+        "name": "フェーズ1：初期攻撃",
+        "description": "主砲と副砲による基本攻撃パターン",
+        "activeWeapons": ["main_gun_left", "main_gun_right", "secondary_guns"],
+        "specialAttacks": [],
+        "behavior": {
+          "aggressiveness": 0.5,
+          "movementPattern": "stationary",
+          "targetPriority": "player",
+          "specialConditions": []
+        }
+      },
+      {
+        "id": 2,
+        "healthThreshold": 0.5,
+        "name": "フェーズ2：激化",
+        "description": "ミサイル攻撃追加、攻撃頻度上昇",
+        "activeWeapons": ["main_gun_left", "main_gun_right", "secondary_guns", "missile_launcher"],
+        "specialAttacks": [
+          {
+            "name": "弾幕攻撃",
+            "cooldown": 15000,
+            "damage": 50,
+            "range": 150,
+            "description": "広範囲に弾幕を展開",
+            "animation": "barrage_attack"
+          }
+        ],
+        "behavior": {
+          "aggressiveness": 0.7,
+          "movementPattern": "orbit",
+          "targetPriority": "player",
+          "specialConditions": [
+            {
+              "type": "low_health_trigger",
+              "threshold": 0.3,
+              "action": "activate_shield_burst"
+            }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "healthThreshold": 0.25,
+        "name": "フェーズ3：最終決戦",
+        "description": "全システム故障、必殺技解放",
+        "activeWeapons": [],
+        "specialAttacks": [
+          {
+            "name": "リアクター暴走",
+            "cooldown": 20000,
+            "damage": 300,
+            "range": 200,
+            "description": "リアクターが暴走、周囲に大ダメージ",
+            "animation": "reactor_meltdown"
+          },
+          {
+            "name": "最後の抵抗",
+            "cooldown": 10000,
+            "damage": 100,
+            "range": 100,
+            "description": "残存システムによる自爆攻撃",
+            "animation": "final_blast"
+          }
+        ],
+        "behavior": {
+          "aggressiveness": 1.0,
+          "movementPattern": "aggressive_advance",
+          "targetPriority": "player",
+          "specialConditions": [
+            {
+              "type": "death_timer",
+              "duration": 30000,
+              "action": "force_victory"
+            }
+          ]
+        }
+      }
+    ],
+    
+    "ai": {
+      "globalBehavior": {
+        "reactionTime": 500,
+        "predictionAccuracy": 0.8,
+        "adaptiveAI": true,
+        "learningRate": 0.1
+      },
+      "phaseTransitions": {
+        "animationDuration": 3000,
+        "invulnerabilityDuration": 2000,
+        "announcements": [
+          "Warning: Enemy battleship entering Phase 2!",
+          "Critical: Reactor core exposed!",
+          "Alert: Boss entering final phase!"
+        ]
+      }
+    },
+    
+    "rewards": {
+      "baseScore": 10000,
+      "phaseBonus": [0, 2000, 5000],
+      "timeBonus": {
+        "maxBonus": 3000,
+        "timeLimit": 300000
+      },
+      "items": [
+        {
+          "id": "boss_fragment_titan",
+          "name": "タイタン級フラグメント",
+          "rarity": "legendary",
+          "dropRate": 1.0
+        },
+        {
+          "id": "rare_crystal",
+          "name": "レアクリスタル",
+          "rarity": "rare",
+          "dropRate": 0.8,
+          "quantity": {"min": 3, "max": 7}
+        }
+      ]
+    }
+  },
+  
+  "balanceInfo": {
+    "overallRating": 9,
+    "balanceScore": 8.8,
+    "complexity": 9,
+    "estimatedDuration": "5-8 minutes",
+    "difficulty": "hard",
+    "playerLevel": "advanced",
+    "balanceNotes": [
+      "主砲破壊により大幅に難易度低下",
+      "シールド発生装置の破壊がキーポイント",
+      "フェーズ3は時間制限があるため長期戦は不可"
+    ]
+  }
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 無限宇宙シューティング</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* チュートリアル・ヘルプ用スタイル */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-align: right;
+        }
+        .combo {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            color: #ffff00;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .combo.active {
+            opacity: 1;
+        }
+        .high-score {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            color: #88ccff;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .health-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+            height: 20px;
+            background-color: rgba(0,0,0,0.5);
+            border: 2px solid white;
+        }
+        .health-fill {
+            height: 100%;
+            background-color: #00ff00;
+            transition: width 0.3s;
+        }
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+        }
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background-color: rgba(255,255,255,0.8);
+        }
+        .crosshair::before {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+        .crosshair::after {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+        /* ミニマップ/レーダー */
+        .minimap {
+            position: absolute;
+            top: 150px;
+            left: 20px;
+            width: 200px;
+            height: 200px;
+            background-color: rgba(0, 0, 20, 0.8);
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 50%;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .minimap-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .minimap canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        /* タッチコントロール */
+        .touch-controls {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: all;
+        }
+        .joystick {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            width: 120px;
+            height: 120px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .joystick-thumb {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .fire-button {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255,0,0,0.5);
+            border-radius: 50%;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        @media (hover: none) and (pointer: coarse) {
+            .touch-controls {
+                display: block;
+            }
+            .controls-info {
+                display: none;
+            }
+        }
+        /* 収集メッセージ */
+        .collect-message {
+            position: absolute;
+            left: 50%;
+            top: 30%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            opacity: 0;
+            animation: collectFade 1.5s ease-out;
+        }
+        @keyframes collectFade {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-50px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="ui-overlay">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="combo" id="combo">Combo x<span id="combo-value">0</span></div>
+        <div class="high-score">High Score: <span id="high-score">0</span></div>
+        <div class="credits" style="position: absolute; top: 110px; right: 20px; color: #ffaa00; font-size: 18px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            💰 <span id="credits">0</span>
+        </div>
+        <div class="health-bar">
+            <div class="health-fill" id="health-fill" style="width: 100%"></div>
+        </div>
+        <div class="weapon-info" style="position: absolute; bottom: 80px; left: 20px; color: #00ffff; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            <div>プライマリ: <span id="primary-weapon">パルスレーザー</span></div>
+            <div style="margin-top: 5px;">ミサイル: <span id="secondary-ammo">0</span></div>
+        </div>
+        <div class="minimap">
+            <div class="minimap-grid"></div>
+            <canvas id="minimap-canvas"></canvas>
+        </div>
+        <div class="crosshair"></div>
+        <div class="controls-info">
+            W: 前進 | S: 後退 | A/D: 左右移動 | マウス: 照準 | クリック: 射撃 | 右クリック: ロックオン | Q: ターゲット切替 | Shift: ブースト
+        </div>
+        <div class="touch-controls">
+            <div class="joystick" id="joystick">
+                <div class="joystick-thumb" id="joystick-thumb"></div>
+            </div>
+            <div class="fire-button" id="fire-button">FIRE</div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "planet-landing-system",
+  "version": "0.1.0",
+  "description": "Planet landing and development system for Infinite Space Shooter 3D",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}
