@@ -1,53 +1,31 @@
-name: Deploy to GitHub Pages
+name: GitHub Pages Deploy
 
+# main ブランチへの push をトリガーに自動デプロイ
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main    # 本番に使っているブランチ名を指定
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build
-      run: npm run build
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-      if: github.ref == 'refs/heads/main'
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      if: github.ref == 'refs/heads/main'
-      with:
-        path: './dist'
-
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    
-    permissions:
-      pages: write
-      id-token: write
-
+    # Secrets → GITHUB_TOKEN はリポジトリ作成時に自動で用意される
     steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+      # リポジトリをチェックアウト
+      - uses: actions/checkout@v3
+
+      # Pages 用に環境をセットアップ
+      - uses: actions/configure-pages@v3
+
+      # デプロイ対象ディレクトリをアップロード
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          # 静的ファイルを配置しているフォルダを指定
+          path: './'         # ルート直下なら './'。public や docs を使っている場合は './public' や './docs' に置き換えてください。
+
+      # 実際に GitHub Pages にデプロイ
+      - id: deploy-pages
+        uses: actions/deploy-pages@v1
+
+      # （オプション）ページ URL を出力
+      - run: echo "🎉 Deployed to ${{ steps.deploy-pages.outputs.page_url }}"
