@@ -1,5 +1,7 @@
 // 広域銀河マップシステム
 
+import * as THREE from 'three';
+
 export class GalaxyMap {
     constructor(game) {
         this.game = game;
@@ -26,6 +28,10 @@ export class GalaxyMap {
         this.dragStartY = 0;
         this.dragCameraX = 0;
         this.dragCameraY = 0;
+        
+        // 選択された惑星
+        this.selectedZone = null;
+        this.clickableZones = [];
         
         this.createUI();
         this.setupEventListeners();
@@ -167,11 +173,60 @@ export class GalaxyMap {
             </div>
         `;
         
+        // ワープボタン（選択された惑星へのワープ用）
+        this.warpButton = document.createElement('button');
+        this.warpButton.id = 'warp-to-selected';
+        this.warpButton.style.cssText = `
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #00ffff, #0088ff);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.5);
+        `;
+        this.warpButton.textContent = '🚀 ワープ';
+        this.warpButton.onmouseover = () => {
+            this.warpButton.style.transform = 'translateX(-50%) scale(1.1)';
+            this.warpButton.style.boxShadow = '0 8px 30px rgba(0, 255, 255, 0.7)';
+        };
+        this.warpButton.onmouseout = () => {
+            this.warpButton.style.transform = 'translateX(-50%) scale(1)';
+            this.warpButton.style.boxShadow = '0 5px 20px rgba(0, 255, 255, 0.5)';
+        };
+        this.warpButton.onclick = () => this.warpToSelected();
+        
+        // 選択情報パネル
+        this.selectionInfo = document.createElement('div');
+        this.selectionInfo.style.cssText = `
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px 30px;
+            color: white;
+            display: none;
+            text-align: center;
+        `;
+        
         // 組み立て
         this.mapContainer.appendChild(header);
         this.mapContainer.appendChild(this.mapCanvas);
         this.mapContainer.appendChild(controls);
         this.mapContainer.appendChild(legend);
+        this.mapContainer.appendChild(this.selectionInfo);
+        this.mapContainer.appendChild(this.warpButton);
         
         document.body.appendChild(this.mapContainer);
         
@@ -226,7 +281,7 @@ export class GalaxyMap {
             this.draw();
         });
         
-        // ドラッグ操作
+        // クリック・ドラッグ操作
         this.mapCanvas.addEventListener('mousedown', (e) => {
             this.isDragging = true;
             this.dragStartX = e.clientX;
@@ -234,6 +289,24 @@ export class GalaxyMap {
             this.dragCameraX = this.cameraX;
             this.dragCameraY = this.cameraY;
             this.mapCanvas.style.cursor = 'grabbing';
+        });
+        
+        // クリックで惑星選択
+        this.mapCanvas.addEventListener('click', (e) => {
+            // ドラッグ中はクリック無視
+            const dragDistance = Math.sqrt(
+                Math.pow(e.clientX - this.dragStartX, 2) + 
+                Math.pow(e.clientY - this.dragStartY, 2)
+            );
+            if (dragDistance > 5) return;
+            
+            // クリック位置をワールド座標に変換
+            const rect = this.mapCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 惑星をクリックしたかチェック
+            this.checkPlanetClick(x, y);
         });
         
         window.addEventListener('mousemove', (e) => {
@@ -253,9 +326,9 @@ export class GalaxyMap {
             this.mapCanvas.style.cursor = 'grab';
         });
         
-        // Mキーでマップ開閉
+        // Gキーでマップ開閉（Galaxy Map）
         window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'm' && !this.game.isPaused) {
+            if (e.key.toLowerCase() === 'g' && !this.game.isPaused) {
                 if (this.isOpen) {
                     this.close();
                 } else {
@@ -314,6 +387,9 @@ export class GalaxyMap {
         
         // クリア
         ctx.clearRect(0, 0, width, height);
+        
+        // クリック可能ゾーンをリセット
+        this.clickableZones = [];
         
         // 背景の星
         this.drawStarfield();
@@ -401,9 +477,42 @@ export class GalaxyMap {
         
         // メイン惑星
         const planetRadius = zone.planetData.radius * this.zoomLevel * 0.5;
+        const displayRadius = Math.max(planetRadius, 10);
+        
+        // クリック可能ゾーンを登録
+        this.clickableZones.push({
+            id: zone.id,
+            name: zone.japaneseName,
+            screenX: screenX,
+            screenY: screenY,
+            worldX: zoneX,
+            worldY: zoneY,
+            radius: displayRadius,
+            distance: zone.solarDistance,
+            unlocked: zone.unlocked,
+            discovered: zone.discovered
+        });
+        
+        // 選択されている場合は強調表示
+        if (this.selectedZone && this.selectedZone.id === zone.id) {
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, displayRadius + 10, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // パルスエフェクト
+            const time = Date.now() * 0.001;
+            const pulseSize = displayRadius + 20 + Math.sin(time * 3) * 10;
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, pulseSize, 0, Math.PI * 2);
+            ctx.stroke();
+        }
         
         ctx.beginPath();
-        ctx.arc(screenX, screenY, Math.max(planetRadius, 10), 0, Math.PI * 2);
+        ctx.arc(screenX, screenY, displayRadius, 0, Math.PI * 2);
         
         if (zone.discovered) {
             ctx.fillStyle = zone.unlocked ? '#4169E1' : '#666666';
@@ -488,5 +597,85 @@ export class GalaxyMap {
             position: position,
             discoveredAt: Date.now()
         });
+    }
+    
+    checkPlanetClick(x, y) {
+        // クリック可能なゾーンをチェック
+        for (const zone of this.clickableZones) {
+            const distance = Math.sqrt(
+                Math.pow(x - zone.screenX, 2) + 
+                Math.pow(y - zone.screenY, 2)
+            );
+            
+            if (distance < zone.radius + 10) {
+                this.selectZone(zone);
+                return;
+            }
+        }
+        
+        // 何もクリックされなかった場合は選択解除
+        this.deselectZone();
+    }
+    
+    selectZone(zone) {
+        this.selectedZone = zone;
+        
+        // 選択情報を表示
+        this.selectionInfo.style.display = 'block';
+        this.selectionInfo.innerHTML = `
+            <h3 style="color: #00ffff; margin: 0 0 10px 0;">${zone.name}</h3>
+            <p style="margin: 5px 0;">距離: ${zone.distance.toFixed(1)} AU</p>
+            ${zone.unlocked ? '' : '<p style="color: #ff6666;">🔒 ロックされています</p>'}
+        `;
+        
+        // ワープボタンを表示（アンロックされている場合のみ）
+        if (zone.unlocked && zone.id !== this.game.zoneManager?.currentZone) {
+            this.warpButton.style.display = 'block';
+            this.warpButton.textContent = `🚀 ${zone.name}へワープ`;
+        } else {
+            this.warpButton.style.display = 'none';
+        }
+        
+        // 再描画
+        this.draw();
+    }
+    
+    deselectZone() {
+        this.selectedZone = null;
+        this.selectionInfo.style.display = 'none';
+        this.warpButton.style.display = 'none';
+        this.draw();
+    }
+    
+    warpToSelected() {
+        if (!this.selectedZone || !this.selectedZone.unlocked) return;
+        
+        // マップを閉じる
+        this.close();
+        
+        // ワープシステムを使用してワープ
+        if (this.game.warpSystem) {
+            // ワープシステムに場所を追加
+            this.game.warpSystem.addDiscoveredLocation({
+                name: this.selectedZone.name,
+                position: new THREE.Vector3(
+                    this.selectedZone.worldX || 0,
+                    0,
+                    this.selectedZone.worldY || 0
+                ),
+                type: 'planet',
+                icon: '🌍'
+            });
+            
+            // ワープメニューを開く
+            setTimeout(() => {
+                this.game.warpSystem.openWarpMenu();
+            }, 300);
+        }
+        
+        // ZoneManagerがある場合は直接ゾーン移動
+        if (this.game.zoneManager && this.selectedZone.id) {
+            this.game.zoneManager.travelToZone(this.selectedZone.id);
+        }
     }
 }
