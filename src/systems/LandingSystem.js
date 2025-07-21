@@ -4,12 +4,18 @@ import { LandingMenu } from './LandingMenu.js';
 export class LandingSystem {
     constructor(scene) {
         this.scene = scene;
+        this.game = null; // メインゲーム参照
         this.isLanding = false;
         this.currentTarget = null;
         this.landingUI = null;
         this.landingMenu = null;
+        this.planetLandingGame = null;
         
         this.createLandingUI();
+    }
+    
+    setGame(game) {
+        this.game = game;
     }
     
     createLandingUI() {
@@ -220,9 +226,94 @@ export class LandingSystem {
     }
     
     showLandingMenu() {
+        // 惑星の場合は惑星着陸システムを起動
+        if (this.currentTarget.type === 'planet') {
+            this.loadPlanetLandingSystem();
+        } else {
+            // ステーションの場合は従来のメニュー
+            this.showStationMenu();
+        }
+    }
+    
+    async loadPlanetLandingSystem() {
+        try {
+            // 惑星システムモジュールを動的にロード
+            const { PlanetLandingGame } = await import('../../planet-landing-system/src/PlanetLandingGame.js');
+            
+            // コンテナを作成
+            const planetContainer = document.createElement('div');
+            planetContainer.id = 'planet-landing-container';
+            planetContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                background: #000;
+            `;
+            document.body.appendChild(planetContainer);
+            
+            // メインゲームを一時停止
+            if (this.game) {
+                this.game.isPaused = true;
+                if (this.game.renderer) {
+                    this.game.renderer.domElement.style.display = 'none';
+                }
+            }
+            
+            // 惑星データを準備
+            const planetData = {
+                playerId: this.game?.playerId || 'player1',
+                playerData: {
+                    credits: this.game?.inventorySystem?.credits || 10000,
+                    inventory: this.game?.inventorySystem?.items || [],
+                    unlockedTech: this.game?.unlockedTech || []
+                },
+                planetData: {
+                    id: this.currentTarget.object.id || `planet_${Date.now()}`,
+                    name: this.currentTarget.name,
+                    type: 'terrestrial',
+                    position: this.currentTarget.object.mesh.position,
+                    resources: this.currentTarget.object.resources || {}
+                }
+            };
+            
+            // 惑星ゲームを初期化
+            this.planetLandingGame = new PlanetLandingGame({
+                container: planetContainer,
+                planetData: planetData,
+                onReturn: (data) => {
+                    this.handleReturnFromPlanet(data);
+                    planetContainer.remove();
+                    
+                    // メインゲーム復帰
+                    if (this.game && this.game.renderer) {
+                        this.game.renderer.domElement.style.display = 'block';
+                        this.game.isPaused = false;
+                    }
+                    
+                    // 着陸状態をリセット
+                    this.isLanding = false;
+                    this.currentTarget = null;
+                    this.planetLandingGame = null;
+                }
+            });
+            
+            // 惑星ゲームを開始
+            this.planetLandingGame.start();
+            
+        } catch (error) {
+            console.error('Failed to load planet landing system:', error);
+            // フォールバック：通常のメニューを表示
+            this.showStationMenu();
+        }
+    }
+    
+    showStationMenu() {
         // 新しいLandingMenuシステムを使用
-        if (!this.landingMenu && window.game) {
-            this.landingMenu = new LandingMenu(window.game);
+        if (!this.landingMenu && this.game) {
+            this.landingMenu = new LandingMenu(this.game);
         }
         
         if (this.landingMenu) {
@@ -243,6 +334,46 @@ export class LandingSystem {
         } else {
             // フォールバック：古いメニューシステムを使用
             this.showOldLandingMenu();
+        }
+    }
+    
+    handleReturnFromPlanet(data) {
+        console.log('Returned from planet with data:', data);
+        
+        // 獲得した資源を反映
+        if (data.resources && this.game?.inventorySystem) {
+            if (data.resources.credits) {
+                this.game.inventorySystem.addCredits(data.resources.credits);
+                console.log(`Gained ${data.resources.credits} credits`);
+            }
+            
+            // アイテムを追加
+            if (data.resources.items) {
+                data.resources.items.forEach(item => {
+                    this.game.inventorySystem.addItem(item);
+                    console.log(`Gained item: ${item}`);
+                });
+            }
+            
+            // 経験値を追加
+            if (data.resources.experience && this.game.skillSystem) {
+                this.game.skillSystem.addExperience(data.resources.experience);
+                console.log(`Gained ${data.resources.experience} experience`);
+            }
+        }
+        
+        // 惑星の所有権を更新
+        if (data.planetStatus && data.planetStatus.owned) {
+            if (!this.game.ownedPlanets) {
+                this.game.ownedPlanets = new Set();
+            }
+            this.game.ownedPlanets.add(data.planetId);
+            console.log(`Planet ${data.planetId} is now owned`);
+        }
+        
+        // ルナに報告
+        if (this.game.companionSystem && this.game.companionSystem.isActive) {
+            this.game.companionSystem.onDiscovery();
         }
     }
     

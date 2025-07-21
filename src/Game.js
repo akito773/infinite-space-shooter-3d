@@ -102,6 +102,10 @@ export class Game {
             planetsVisited: 0,
             startTime: Date.now()
         };
+        
+        // ゲーム状態管理
+        this.isPaused = false;
+        this.ownedPlanets = new Set();
     }
 
     init() {
@@ -153,6 +157,7 @@ export class Game {
         
         // 着陸システム初期化
         this.landingSystem = new LandingSystem(this.scene);
+        this.landingSystem.setGame(this);
         
         // ワープシステム初期化
         this.warpSystem = new WarpSystem(this.scene, this.player);
