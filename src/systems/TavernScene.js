@@ -270,6 +270,7 @@ export class TavernScene {
         if (this.game.soundManager) {
             this.game.soundManager.playMainBGM();
         }
+    }
 }
 
 // CSS追加

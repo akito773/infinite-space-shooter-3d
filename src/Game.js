@@ -171,7 +171,9 @@ export class Game {
         this.missionSystem = new AdvancedMissionSystem(this);
         
         // サウンドマネージャー初期化
+        console.log('Game: SoundManager初期化前');
         this.soundManager = new SoundManager();
+        console.log('Game: SoundManager初期化後', this.soundManager);
         
         // メインBGMを開始（ユーザー操作後に自動再生）
         document.addEventListener('click', () => {

@@ -1,12 +1,18 @@
 export class SoundManager {
     constructor() {
+        console.log('SoundManager初期化開始');
         this.sounds = {};
         this.enabled = true;
         this.volume = 0.5;
         this.bgmVolume = 0.3;
         
-        // AudioContextの初期化
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            // AudioContextの初期化
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('AudioContext初期化成功');
+        } catch (e) {
+            console.error('AudioContext初期化エラー:', e);
+        }
         
         // BGM管理
         this.bgmTracks = {};
@@ -18,6 +24,7 @@ export class SoundManager {
         
         // BGMを初期化
         this.initializeBGM();
+        console.log('SoundManager初期化完了');
     }
     
     createSounds() {
