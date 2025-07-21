@@ -225,8 +225,13 @@ export class BossSpawnSystem {
             this.updateBossUI();
             
             // ボス撃破チェック
-            if (!this.currentBoss.isAlive) {
-                this.onBossDefeated();
+            if (!this.currentBoss.isAlive && !this.bossDefeating) {
+                this.bossDefeating = true; // 重複処理防止
+                // 少し遅延してから処理（破壊エフェクト中のため）
+                setTimeout(() => {
+                    this.onBossDefeated();
+                    this.bossDefeating = false;
+                }, 2500); // ボスの削除タイマー（2秒）より少し長め
             }
         }
     }
@@ -570,6 +575,11 @@ export class BossSpawnSystem {
         // BGMを通常に戻す
         if (this.game.soundManager && this.game.soundManager.playNormalMusic) {
             this.game.soundManager.playNormalMusic();
+        }
+        
+        // ボスHPゲージを非表示
+        if (this.bossHealthBar && this.bossHealthBar.container) {
+            this.bossHealthBar.container.style.display = 'none';
         }
         
         // 次のボスのためにリセット

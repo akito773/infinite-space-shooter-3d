@@ -477,6 +477,7 @@ export class BossBattleship {
         }, 100);
         
         if (this.health <= 0) {
+            this.health = 0; // HPを確実に0にする
             this.destroy();
         }
     }
