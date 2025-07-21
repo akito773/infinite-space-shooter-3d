@@ -175,7 +175,9 @@ export class Game {
         
         // メインBGMを開始（ユーザー操作後に自動再生）
         document.addEventListener('click', () => {
+            console.log('クリックイベント検出 - BGM開始を試みます');
             if (this.soundManager && !this.soundManager.currentBGM) {
+                console.log('メインBGMを再生します');
                 this.soundManager.playMainBGM();
             }
         }, { once: true });

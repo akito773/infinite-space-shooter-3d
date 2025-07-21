@@ -161,6 +161,7 @@ export class SoundManager {
     
     // BGM関連のメソッド
     initializeBGM() {
+        console.log('BGMシステムを初期化中...');
         // BGMトラックの定義
         const bgmFiles = {
             main: 'assets/bgm/epic_space_orchestra_2025-07-21T17-36-18.wav',
@@ -185,15 +186,27 @@ export class SoundManager {
                 });
             }
             
+            // エラーハンドリング
+            audio.addEventListener('error', (e) => {
+                console.warn(`BGMファイルが見つかりません: ${path}`);
+                // エラーが発生したトラックは削除
+                delete this.bgmTracks[name];
+            });
+            
             this.bgmTracks[name] = audio;
         });
     }
     
     playBGM(trackName, fadeIn = true) {
-        if (!this.enabled) return;
+        console.log(`BGM再生リクエスト: ${trackName}`);
+        if (!this.enabled) {
+            console.log('SoundManagerが無効です');
+            return;
+        }
         
         // 既に同じBGMが再生中なら何もしない
         if (this.currentBGMName === trackName && this.currentBGM && !this.currentBGM.paused) {
+            console.log(`${trackName}は既に再生中です`);
             return;
         }
         
@@ -205,6 +218,7 @@ export class SoundManager {
         // 新しいBGMを再生
         const newBGM = this.bgmTracks[trackName];
         if (newBGM) {
+            console.log(`${trackName}を再生開始します`);
             this.currentBGM = newBGM;
             this.currentBGMName = trackName;
             
@@ -226,6 +240,8 @@ export class SoundManager {
                 newBGM.volume = this.bgmVolume;
                 newBGM.play().catch(e => console.log('BGM再生エラー:', e));
             }
+        } else {
+            console.warn(`BGMトラック'${trackName}'が見つかりません`);
         }
     }
     
