@@ -43,6 +43,7 @@ import { CompanionSystem } from './systems/CompanionSystem.js';
 import { TavernScene } from './systems/TavernScene.js';
 import { GalaxyMap } from './systems/GalaxyMap.js';
 import { VoiceSystem } from './systems/VoiceSystem.js';
+import { StoryDialogueSystem } from './systems/StoryDialogueSystem.js';
 
 export class Game {
     constructor() {
@@ -159,6 +160,9 @@ export class Game {
         
         // 銀河マップ初期化
         this.galaxyMap = new GalaxyMap(this);
+        
+        // ストーリーダイアログシステム初期化
+        this.storyDialogue = new StoryDialogueSystem(this);
         
         // 着陸システム初期化
         this.landingSystem = new LandingSystem(this.scene);
@@ -278,6 +282,20 @@ export class Game {
                 this.waveManager.startNextWave();
             }
         }, 3000);
+        
+        // 初回起動時のストーリー開始
+        const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+        if (!hasSeenIntro) {
+            setTimeout(() => {
+                this.storyDialogue.startDialogue('intro_1', () => {
+                    // イントロ完了後、信号受信イベント
+                    setTimeout(() => {
+                        this.storyDialogue.startDialogue('intro_signal');
+                    }, 5000);
+                });
+                localStorage.setItem('hasSeenIntro', 'true');
+            }, 1000);
+        }
         
         // Gameインスタンスをグローバルに登録（他のシステムから参照可能に）
         window.game = this;

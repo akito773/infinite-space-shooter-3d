@@ -21,11 +21,50 @@ function PropertiesPanel() {
   const generatePrompt = () => {
     if (!objects.length) return;
     
-    // Check if it's a player ship
+    // Check model type
     const isPlayerShip = objects.some(obj => obj.name === 'PlayerShip');
+    const isAdvancedShip = objects.some(obj => obj.name === 'PlayerShip_Advanced');
+    const isRobot = objects.some(obj => obj.name === 'Humanoid_Robot');
+    
+    if (isAdvancedShip) {
+      // Advanced ship specific prompt
+      const prompt = `Ultra-detailed futuristic space fighter texture, high-tech military spacecraft finish,
+metallic grey titanium hull with brushed metal texture, neon cyan accent lines along edges,
+detailed panel separation with visible rivets and seams, heat-resistant ceramic coating on engine areas,
+transparent cockpit glass with holographic HUD projections and internal dashboard details,
+glowing cyan plasma engine cores with heat distortion effects, 
+twin main cannon barrels with carbon fiber wrapping, missile pod doors with warning labels,
+air intake grilles with internal turbine details, antenna with red warning lights,
+squadron marking "SF-01 ADVANCED" in futuristic military font, unit patches and kill marks,
+battle damage with exposed internal components, oil stains near maintenance panels,
+8K PBR texture set with extreme detail, photorealistic materials for AAA game asset`;
+      
+      setPromptText(prompt);
+      return;
+    }
+    
+    if (isRobot) {
+      // Robot specific prompt
+      const prompt = `Futuristic humanoid combat robot texture, military mecha design,
+gunmetal grey armor plating with panel lines and mechanical details,
+glowing cyan energy core in chest cavity with pulsing light effect,
+joint areas showing hydraulic pistons and servo motors,
+head visor with tactical HUD display and targeting reticle,
+shoulder armor with unit designation "MR-X1" and hazard stripes,
+weathered metal finish with scratches and battle scars,
+exposed mechanical components at joints with oil stains,
+thruster nozzles with heat-blackened metal and burn marks,
+feet with anti-slip tread patterns and magnetic locks,
+warning labels and maintenance access panels throughout,
+8K PBR textures with metallic, roughness, normal, and emission maps,
+realistic mecha style suitable for action game or anime-inspired project`;
+      
+      setPromptText(prompt);
+      return;
+    }
     
     if (isPlayerShip) {
-      // Player ship specific prompt
+      // Basic player ship prompt
       const prompt = `Futuristic space fighter texture map, metallic grey base color with neon blue accents, 
 cockpit with holographic HUD display, glowing cyan engine exhausts, 
 panel lines and heat-resistant plating, warning decals on wing tips, 

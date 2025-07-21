@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import { addObject, addMultipleObjects, clearScene, setTransformMode } from '../store';
 import { generatePlayerShip } from '../utils/shipGenerator';
+import { generateAdvancedPlayerShip, generateHumanoidRobot } from '../utils/shipGeneratorAdvanced';
 import { exportSceneAsGLTF, createExportScene } from '../utils/exporter';
 
 function Toolbar() {
@@ -40,6 +41,24 @@ function Toolbar() {
     }
   };
 
+  const createAdvancedShip = () => {
+    const confirmation = window.confirm('This will clear the current scene and create an advanced player ship. Continue?');
+    if (confirmation) {
+      dispatch(clearScene());
+      const shipObjects = generateAdvancedPlayerShip();
+      dispatch(addMultipleObjects(shipObjects));
+    }
+  };
+
+  const createRobot = () => {
+    const confirmation = window.confirm('This will clear the current scene and create a humanoid robot. Continue?');
+    if (confirmation) {
+      dispatch(clearScene());
+      const robotObjects = generateHumanoidRobot();
+      dispatch(addMultipleObjects(robotObjects));
+    }
+  };
+
   const handleExport = async () => {
     if (objects.length === 0) {
       alert('No objects to export!');
@@ -48,8 +67,16 @@ function Toolbar() {
     
     try {
       const exportScene = createExportScene(objects);
-      const playerShip = objects.find(obj => obj.name === 'PlayerShip');
-      const filename = playerShip ? 'player_ship_SF-01.glb' : 'custom_model.glb';
+      
+      // Determine filename based on model type
+      let filename = 'custom_model.glb';
+      if (objects.find(obj => obj.name === 'PlayerShip')) {
+        filename = 'player_ship_SF-01_basic.glb';
+      } else if (objects.find(obj => obj.name === 'PlayerShip_Advanced')) {
+        filename = 'player_ship_SF-01_advanced.glb';
+      } else if (objects.find(obj => obj.name === 'Humanoid_Robot')) {
+        filename = 'humanoid_robot_MR-X1.glb';
+      }
       
       await exportSceneAsGLTF(exportScene, filename);
     } catch (error) {
@@ -62,10 +89,28 @@ function Toolbar() {
       <button
         className="tool-button"
         onClick={createPlayerShip}
-        title="Generate Player Ship"
+        title="Generate Basic Player Ship"
         style={{ backgroundColor: '#0066cc', fontSize: '11px' }}
       >
-        Player<br/>Ship
+        Basic<br/>Ship
+      </button>
+      
+      <button
+        className="tool-button"
+        onClick={createAdvancedShip}
+        title="Generate Advanced Player Ship"
+        style={{ backgroundColor: '#0088ff', fontSize: '10px' }}
+      >
+        Advanced<br/>Ship
+      </button>
+      
+      <button
+        className="tool-button"
+        onClick={createRobot}
+        title="Generate Humanoid Robot"
+        style={{ backgroundColor: '#ff6600', fontSize: '11px' }}
+      >
+        Robot
       </button>
       
       <button

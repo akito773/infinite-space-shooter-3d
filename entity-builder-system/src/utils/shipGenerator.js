@@ -52,7 +52,7 @@ function createObject(name, geometry, position = [0, 0, 0], rotation = [0, 0, 0]
   };
 }
 
-// プレイヤー戦闘機の生成
+// 高品質プレイヤー戦闘機の生成
 export function generatePlayerShip() {
   const objects = [];
   
