@@ -7,6 +7,11 @@ export class Item3D {
         this.type = type || this.getRandomType();
         this.collected = false;
         
+        // アイテムの有効期限（30秒）
+        this.lifeTime = 30000; // ミリ秒
+        this.spawnTime = Date.now();
+        this.isExpiring = false;
+        
         this.createMesh();
         this.createEffects();
         this.setValue();
@@ -275,6 +280,35 @@ export class Item3D {
     update(delta) {
         if (this.collected) return;
         
+        // 経過時間をチェック
+        const elapsed = Date.now() - this.spawnTime;
+        
+        // 有効期限チェック（30秒）
+        if (elapsed > this.lifeTime) {
+            // 期限切れ - 削除
+            this.collected = true;
+            this.destroy();
+            return;
+        }
+        
+        // 期限切れ間近の警告（最後の5秒）
+        if (elapsed > this.lifeTime - 5000 && !this.isExpiring) {
+            this.isExpiring = true;
+            // 点滅開始
+        }
+        
+        // 点滅エフェクト（期限切れ間近）
+        if (this.isExpiring) {
+            const blinkSpeed = 10; // 速い点滅
+            const opacity = (Math.sin(Date.now() * 0.01 * blinkSpeed) + 1) * 0.5;
+            this.group.children.forEach(child => {
+                if (child.material && child.material.opacity !== undefined) {
+                    child.material.transparent = true;
+                    child.material.opacity = opacity;
+                }
+            });
+        }
+        
         // 回転アニメーション
         this.group.rotation.y += delta * 2;
         
@@ -383,7 +417,8 @@ export class Item3D {
         return { type: this.type, value: this.value, message: this.message };
     }
 
-    checkProximity(playerPosition, threshold = 5) {
+    checkProximity(playerPosition, threshold = 15) {
+        // 取得範囲を5から15に拡大（3倍）
         const distance = this.group.position.distanceTo(playerPosition);
         return distance < threshold;
     }

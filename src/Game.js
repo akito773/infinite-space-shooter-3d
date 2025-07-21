@@ -41,6 +41,7 @@ import { BossSpawnSystem } from './systems/BossSpawnSystem.js';
 import { StoryProgressionSystem } from './systems/StoryProgressionSystem.js';
 import { CompanionSystem } from './systems/CompanionSystem.js';
 import { TavernScene } from './systems/TavernScene.js';
+import { GalaxyMap } from './systems/GalaxyMap.js';
 
 export class Game {
     constructor() {
@@ -154,6 +155,9 @@ export class Game {
         
         // ミニマップ初期化
         this.minimap = new Minimap();
+        
+        // 銀河マップ初期化
+        this.galaxyMap = new GalaxyMap(this);
         
         // 着陸システム初期化
         this.landingSystem = new LandingSystem(this.scene);

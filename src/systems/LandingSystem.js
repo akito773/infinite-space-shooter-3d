@@ -297,6 +297,16 @@ export class LandingSystem {
                         this.game.isPaused = false;
                     }
                     
+                    // 惑星着陸チュートリアルを非表示にする
+                    const tutorialPanel = document.querySelector('.tutorial-panel');
+                    if (tutorialPanel) {
+                        tutorialPanel.style.display = 'none';
+                    }
+                    const hintPanel = document.querySelector('.hint-panel');
+                    if (hintPanel) {
+                        hintPanel.style.display = 'none';
+                    }
+                    
                     // 着陸状態をリセット
                     this.isLanding = false;
                     this.currentTarget = null;
