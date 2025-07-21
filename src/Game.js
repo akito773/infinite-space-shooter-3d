@@ -251,6 +251,8 @@ export class Game {
         // ルナのボイスをプリロード
         this.voiceSystem.preloadCharacterVoices('luna').then(() => {
             console.log('Luna voices loaded successfully! CV: 日向ここあ');
+            // ルナとの通信を有効化
+            this.companionSystem.activate();
         });
         
         // sceneにgame参照を追加（アイテム用）
