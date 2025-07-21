@@ -8,6 +8,15 @@ export class CompanionSystem {
         this.messageQueue = [];
         this.relationshipLevel = 0; // 0-100
         
+        // ボイス再生用インデックス管理
+        this.lastVoiceIndex = {
+            greetings: -1,
+            combatComments: -1,
+            discoveryComments: -1,
+            bossComments: -1,
+            casualTalk: -1
+        };
+        
         this.initializeLuna();
         this.createUI();
     }
@@ -154,7 +163,8 @@ export class CompanionSystem {
     
     activate() {
         this.isActive = true;
-        this.showMessage(this.getRandomMessage('greetings'));
+        const greetingIndex = Math.floor(Math.random() * this.companion.greetings.length);
+        this.showMessage(this.companion.greetings[greetingIndex], 5000, 'greetings', greetingIndex);
         console.log('Companion Luna activated');
     }
     
@@ -163,7 +173,7 @@ export class CompanionSystem {
         this.hideMessage();
     }
     
-    showMessage(message, duration = 5000) {
+    showMessage(message, duration = 5000, voiceCategory = null, voiceIndex = null) {
         if (!this.isActive) return;
         
         this.messageArea.innerHTML = `<span style="color: #fff;">${message}</span>`;
@@ -171,6 +181,30 @@ export class CompanionSystem {
         
         this.communicationUI.style.display = 'block';
         this.communicationUI.style.animation = 'slideIn 0.3s ease-out';
+        
+        // ボイス再生（VoiceSystemが存在する場合）
+        if (voiceCategory && this.game.voiceSystem) {
+            const categoryMap = {
+                'greetings': 'greeting',
+                'combatComments': 'combat',
+                'discoveryComments': 'discovery',
+                'bossComments': 'boss',
+                'casualTalk': 'casual'
+            };
+            
+            const mappedCategory = categoryMap[voiceCategory] || voiceCategory;
+            
+            // インデックスを管理して順番に再生
+            if (voiceIndex === null && this.lastVoiceIndex[voiceCategory] !== undefined) {
+                const messages = this.companion[voiceCategory];
+                if (messages) {
+                    this.lastVoiceIndex[voiceCategory] = (this.lastVoiceIndex[voiceCategory] + 1) % messages.length;
+                    voiceIndex = this.lastVoiceIndex[voiceCategory];
+                }
+            }
+            
+            this.game.voiceSystem.playLunaVoice(mappedCategory, voiceIndex);
+        }
         
         // 自動的に非表示
         setTimeout(() => {
@@ -195,25 +229,31 @@ export class CompanionSystem {
     
     onCombatStart() {
         if (!this.isActive) return;
-        this.showMessage(this.getRandomMessage('combatComments'), 3000);
+        const message = this.getRandomMessage('combatComments');
+        const index = this.companion.combatComments.indexOf(message);
+        this.showMessage(message, 3000, 'combatComments', index);
         this.increaseTrust(1);
     }
     
     onDiscovery() {
         if (!this.isActive) return;
-        this.showMessage(this.getRandomMessage('discoveryComments'), 4000);
+        const message = this.getRandomMessage('discoveryComments');
+        const index = this.companion.discoveryComments.indexOf(message);
+        this.showMessage(message, 4000, 'discoveryComments', index);
         this.increaseTrust(2);
     }
     
     onBossEncounter() {
         if (!this.isActive) return;
-        this.showMessage(this.getRandomMessage('bossComments'), 6000);
+        const message = this.getRandomMessage('bossComments');
+        const index = this.companion.bossComments.indexOf(message);
+        this.showMessage(message, 6000, 'bossComments', index);
         this.increaseTrust(3);
     }
     
     onBossDefeat() {
         if (!this.isActive) return;
-        this.showMessage("すっごーい！よくやったわ！これで宇宙がちょっと平和になったわね〜♪", 5000);
+        this.showMessage("すっごーい！よくやったわ！これで宇宙がちょっと平和になったわね〜♪", 5000, 'boss_defeat');
         this.increaseTrust(5);
     }
     
@@ -221,7 +261,9 @@ export class CompanionSystem {
         if (!this.isActive) return;
         if (Date.now() - this.lastMessageTime < 30000) return; // 30秒クールダウン
         
-        this.showMessage(this.getRandomMessage('casualTalk'), 4000);
+        const message = this.getRandomMessage('casualTalk');
+        const index = this.companion.casualTalk.indexOf(message);
+        this.showMessage(message, 4000, 'casualTalk', index);
     }
     
     increaseTrust(amount) {
@@ -229,13 +271,25 @@ export class CompanionSystem {
         
         // 特定の信頼度で特別なメッセージ
         if (this.relationshipLevel === 25) {
-            this.showMessage("ありがと！あなたと話してると楽しいわ〜", 4000);
+            this.showMessage("ありがと！あなたと話してると楽しいわ〜", 4000, 'trust_25');
+            if (this.game.voiceSystem) {
+                this.game.voiceSystem.playTrustLevelVoice(25);
+            }
         } else if (this.relationshipLevel === 50) {
-            this.showMessage("もうすっかり友達ね！今度ギルドに遊びに来てよ♪", 5000);
+            this.showMessage("もうすっかり友達ね！今度ギルドに遊びに来てよ♪", 5000, 'trust_50');
+            if (this.game.voiceSystem) {
+                this.game.voiceSystem.playTrustLevelVoice(50);
+            }
         } else if (this.relationshipLevel === 75) {
-            this.showMessage("あなたって本当に頼りになるのね。私の一番の友達よ！", 5000);
+            this.showMessage("あなたって本当に頼りになるのね。私の一番の友達よ！", 5000, 'trust_75');
+            if (this.game.voiceSystem) {
+                this.game.voiceSystem.playTrustLevelVoice(75);
+            }
         } else if (this.relationshipLevel === 100) {
-            this.showMessage("最高のパートナーね！これからもずっとよろしく！", 6000);
+            this.showMessage("最高のパートナーね！これからもずっとよろしく！", 6000, 'trust_100');
+            if (this.game.voiceSystem) {
+                this.game.voiceSystem.playTrustLevelVoice(100);
+            }
         }
     }
     
