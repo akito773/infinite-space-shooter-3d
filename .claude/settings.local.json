@@ -21,7 +21,8 @@
       "Bash(ren:*)",
       "Bash(cp:*)",
       "Bash(npm run preview:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }

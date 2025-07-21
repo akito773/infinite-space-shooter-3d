@@ -127,7 +127,7 @@ export class VoiceSystem {
         
         for (const [key, filename] of Object.entries(voices)) {
             if (filename === null) continue; // 将来追加予定のボイスはスキップ
-            const url = `${import.meta.env.BASE_URL}assets/${filename}`;
+            const url = `assets/${filename}`;
             try {
                 await this.preloadVoice(character, key, url);
             } catch (error) {
@@ -188,7 +188,7 @@ export class VoiceSystem {
                 return null;
             }
             
-            const url = `${import.meta.env.BASE_URL}assets/${filename}`;
+            const url = `assets/${filename}`;
             audio = new Audio(url);
             this.voiceCache.set(cacheKey, audio);
         }
