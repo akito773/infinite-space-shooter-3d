@@ -69,7 +69,7 @@ export class GalaxyMap {
         `;
         
         const title = document.createElement('h2');
-        title.textContent = '🌌 銀河マップ - Galaxy Map';
+        title.textContent = '🌌 銀河マップ＆ワープシステム - Galaxy Map & Warp System';
         title.style.cssText = `
             color: #00ffff;
             margin: 0;
@@ -326,9 +326,9 @@ export class GalaxyMap {
             this.mapCanvas.style.cursor = 'grab';
         });
         
-        // Gキーでマップ開閉（Galaxy Map）
+        // Mキーでマップ開閉（統合：Map & Warp）
         window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'g' && !this.game.isPaused) {
+            if (e.key.toLowerCase() === 'm' && !this.game.isPaused) {
                 if (this.isOpen) {
                     this.close();
                 } else {

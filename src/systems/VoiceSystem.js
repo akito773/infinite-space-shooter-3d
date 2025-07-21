@@ -15,7 +15,7 @@ export class VoiceSystem {
         // キャラクターごとの音声設定
         this.voiceConfig = {
             luna: {
-                path: 'voices/luna/',
+                path: '', // ボイスファイルはassetsフォルダ直下
                 volume: 0.8,
                 pitch: 1.0
             },
@@ -36,72 +36,60 @@ export class VoiceSystem {
             }
         };
         
-        // 音声ファイルのマッピング
+        // 音声ファイルのマッピング（実際のファイル名に合わせる）
         this.voiceMap = {
             luna: {
                 // 挨拶
-                greeting_1: 'luna_greeting_01.mp3',
-                greeting_2: 'luna_greeting_02.mp3',
-                greeting_3: 'luna_greeting_03.mp3',
-                greeting_4: 'luna_greeting_04.mp3',
+                greeting_1: 'voice_よー元気にしてた_日向 ここあ.mp3',
+                greeting_2: 'voice_おつかれさま今日はどんな冒険してるの_日向 ここあ.mp3',
+                greeting_3: 'voice_あらタイミングいいじゃない_日向 ここあ.mp3',
+                greeting_4: 'voice_お疲れ様何か面白い情報ない_日向 ここあ.mp3',
                 
                 // 戦闘応援
-                combat_1: 'luna_combat_01.mp3',
-                combat_2: 'luna_combat_02.mp3',
-                combat_3: 'luna_combat_03.mp3',
-                combat_4: 'luna_combat_04.mp3',
-                combat_5: 'luna_combat_05.mp3',
+                combat_1: 'voice_その調子その調子_日向 ここあ.mp3',
+                combat_2: 'voice_うわー派手にやってるわね_日向 ここあ.mp3',
+                combat_3: 'voice_気をつけて敵が多いよ_日向 ここあ.mp3',
+                combat_4: 'voice_ナイスファイト私も見習わなきゃ_日向 ここあ.mp3',
+                combat_5: 'voice_すごいじゃない流石ね_日向 ここあ.mp3',
                 
                 // 発見
-                discovery_1: 'luna_discovery_01.mp3',
-                discovery_2: 'luna_discovery_02.mp3',
-                discovery_3: 'luna_discovery_03.mp3',
-                discovery_4: 'luna_discovery_04.mp3',
+                discovery_1: 'voice_おお何か見つけた_日向 ここあ.mp3',
+                discovery_2: 'voice_面白そうな場所ね_日向 ここあ.mp3',
+                discovery_3: 'voice_これは珍しいものを発見したわね_日向 ここあ.mp3',
+                discovery_4: 'voice_情報料もらっちゃおうかな_日向 ここあ.mp3',
                 
                 // ボス戦
-                boss_1: 'luna_boss_01.mp3',
-                boss_2: 'luna_boss_02.mp3',
-                boss_3: 'luna_boss_03.mp3',
-                boss_4: 'luna_boss_04.mp3',
+                boss_1: 'voice_うっわーデカいのが出てきた_日向 ここあ.mp3',
+                boss_2: 'voice_負けちゃダメよ応援してるから_日向 ここあ.mp3',
+                boss_3: 'voice_こんなのと戦うなんて無茶しないでよ_日向 ここあ.mp3',
+                boss_4: 'voice_頑張って私も祈ってるから_日向 ここあ.mp3',
                 
                 // ボス撃破
-                boss_defeat: 'luna_boss_defeat.mp3',
+                boss_defeat: 'voice_すっごーいよくやったわこれで宇宙がち_日向 ここあ.mp3',
                 
                 // 雑談
-                casual_1: 'luna_casual_01.mp3',
-                casual_2: 'luna_casual_02.mp3',
-                casual_3: 'luna_casual_03.mp3',
-                casual_4: 'luna_casual_04.mp3',
-                casual_5: 'luna_casual_05.mp3',
+                casual_1: 'voice_そういえば新しい酒場ができたって聞いた_日向 ここあ.mp3',
+                casual_2: 'voice_最近宇宙が騒がしいと思わない_日向 ここあ.mp3',
+                casual_3: 'voice_今度一緒に飲みに行きましょうよ_日向 ここあ.mp3',
+                casual_4: 'voice_あなたの機体カッコいいわね_日向 ここあ.mp3',
+                casual_5: 'voice_ギルドでも噂になってるのよあなたのこと_日向 ここあ.mp3',
                 
                 // 信頼度
-                trust_25: 'luna_trust_25.mp3',
-                trust_50: 'luna_trust_50.mp3',
-                trust_75: 'luna_trust_75.mp3',
-                trust_100: 'luna_trust_100.mp3',
+                trust_25: 'voice_ありがとあなたと話してると楽しいわ_日向 ここあ.mp3',
+                trust_50: 'voice_もうすっかり友達ね今度ギルドに遊びに来_日向 ここあ.mp3',
+                trust_75: 'voice_あなたって本当に頼りになるのね私の一番_日向 ここあ.mp3',
+                trust_100: 'voice_最高のパートナーねこれからもずっとよろ_日向 ここあ.mp3',
                 
                 // 酒場
-                tavern_meet_1: 'luna_tavern_meet_01.mp3',
-                tavern_meet_2: 'luna_tavern_meet_02.mp3',
-                tavern_meet_3: 'luna_tavern_meet_03.mp3',
+                tavern_meet_1: 'voice_あら見ない顔ね新人さん私ルナよ_日向 ここあ.mp3',
+                tavern_meet_2: 'voice_ここは流れ星酒場宇宙で一番美味しい_日向 ここあ.mp3',
+                tavern_meet_3: 'voice_あなた面白そうね今度一緒に飲みましょ_日向 ここあ.mp3',
                 
-                // 追加の反応ボイス
-                itemPickup_1: 'luna_item_01.mp3',
-                itemPickup_2: 'luna_item_02.mp3',
-                itemPickup_3: 'luna_item_03.mp3',
-                itemPickup_4: 'luna_item_04.mp3',
-                
-                lowHealth_1: 'luna_low_health_01.mp3',
-                lowHealth_2: 'luna_low_health_02.mp3',
-                lowHealth_3: 'luna_low_health_03.mp3',
-                
-                speedBoost_1: 'luna_boost_01.mp3',
-                speedBoost_2: 'luna_boost_02.mp3',
-                speedBoost_3: 'luna_boost_03.mp3',
-                
-                longFlight_1: 'luna_long_flight_01.mp3',
-                longFlight_2: 'luna_long_flight_02.mp3',
-                longFlight_3: 'luna_long_flight_03.mp3'
+                // 追加の反応ボイス（将来追加予定）
+                itemPickup: null, // 将来追加予定
+                lowHealth: null, // 将来追加予定
+                speedBoost: null, // 将来追加予定
+                longFlight: null // 将来追加予定
             }
         };
         
@@ -254,17 +242,11 @@ export class VoiceSystem {
                 voiceKeys.push('casual_1', 'casual_2', 'casual_3', 'casual_4', 'casual_5');
                 break;
             case 'itemPickup':
-                voiceKeys.push('itemPickup_1', 'itemPickup_2', 'itemPickup_3', 'itemPickup_4');
-                break;
             case 'lowHealth':
-                voiceKeys.push('lowHealth_1', 'lowHealth_2', 'lowHealth_3');
-                break;
             case 'speedBoost':
-                voiceKeys.push('speedBoost_1', 'speedBoost_2', 'speedBoost_3');
-                break;
             case 'longFlight':
-                voiceKeys.push('longFlight_1', 'longFlight_2', 'longFlight_3');
-                break;
+                // これらのボイスは将来追加予定
+                return null;
             default:
                 console.warn(`Unknown Luna voice category: ${category}`);
                 return null;

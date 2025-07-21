@@ -195,9 +195,8 @@ export class WarpSystem {
     
     setupKeyboardControls() {
         document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'm' && !this.isWarping) {
-                this.toggleWarpMenu();
-            } else if (e.key === 'Escape' && this.warpUI.style.display === 'block') {
+            // Mキーは銀河マップで使用するため、ここでは処理しない
+            if (e.key === 'Escape' && this.warpUI.style.display === 'block') {
                 this.closeWarpMenu();
             }
         });
