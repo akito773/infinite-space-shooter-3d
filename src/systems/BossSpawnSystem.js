@@ -227,11 +227,22 @@ export class BossSpawnSystem {
             // ボス撃破チェック
             if (!this.currentBoss.isAlive && !this.bossDefeating) {
                 this.bossDefeating = true; // 重複処理防止
-                // 少し遅延してから処理（破壊エフェクト中のため）
+                
+                // 即座にヘルスバーを非表示
+                if (this.bossHealthBar && this.bossHealthBar.container) {
+                    this.bossHealthBar.container.style.display = 'none';
+                }
+                
+                // ボスのヘルスを0に設定（UIの同期）
+                if (this.currentBoss) {
+                    this.currentBoss.health = 0;
+                }
+                
+                // 破壊エフェクトが完了する前に処理
                 setTimeout(() => {
                     this.onBossDefeated();
                     this.bossDefeating = false;
-                }, 2500); // ボスの削除タイマー（2秒）より少し長め
+                }, 1800); // ボスの削除タイマー（2秒）より少し短め
             }
         }
     }

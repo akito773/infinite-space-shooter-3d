@@ -85,6 +85,10 @@ export class VoiceSystem {
                 tavern_meet_2: 'voice_ここは流れ星酒場宇宙で一番美味しい_日向 ここあ.mp3',
                 tavern_meet_3: 'voice_あなた面白そうね今度一緒に飲みましょ_日向 ここあ.mp3',
                 
+                // 緊急事態
+                emergency: 'voice_大変だよ！緊急事態だよー！_日向 ここあ.mp3',
+                warning: 'voice_気をつけて敵が多いよ_日向 ここあ.mp3',
+                
                 // 追加の反応ボイス（将来追加予定）
                 itemPickup: null, // 将来追加予定
                 lowHealth: null, // 将来追加予定

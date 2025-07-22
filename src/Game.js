@@ -44,6 +44,11 @@ import { TavernScene } from './systems/TavernScene.js';
 import { GalaxyMap } from './systems/GalaxyMap.js';
 import { VoiceSystem } from './systems/VoiceSystem.js';
 import { StoryDialogueSystem } from './systems/StoryDialogueSystem.js';
+import { StoryEventTrigger } from './systems/StoryEventTrigger.js';
+import { StoryObjectivesUI } from './systems/StoryObjectivesUI.js';
+import { CompanionInteractions } from './systems/CompanionInteractions.js';
+import { AchievementSystem } from './systems/AchievementSystem.js';
+import { EarthEscapeSequence } from './systems/EarthEscapeSequence.js';
 
 export class Game {
     constructor() {
@@ -103,6 +108,7 @@ export class Game {
             totalShots: 0,
             totalHits: 0,
             planetsVisited: 0,
+            itemsCollected: 0,
             startTime: Date.now()
         };
         
@@ -163,6 +169,12 @@ export class Game {
         
         // ストーリーダイアログシステム初期化
         this.storyDialogue = new StoryDialogueSystem(this);
+        
+        // ストーリーイベントトリガー初期化
+        this.storyEventTrigger = new StoryEventTrigger(this);
+        
+        // ストーリー目標UI初期化
+        this.storyObjectivesUI = new StoryObjectivesUI(this);
         
         // 着陸システム初期化
         this.landingSystem = new LandingSystem(this.scene);
@@ -260,14 +272,22 @@ export class Game {
         // 相棒システム初期化
         this.companionSystem = new CompanionSystem(this);
         
+        // コンパニオンインタラクション初期化
+        this.companionInteractions = new CompanionInteractions(this);
+        
+        // 実績システム初期化
+        this.achievementSystem = new AchievementSystem(this);
+        
+        // 地球脱出シーケンス初期化
+        this.earthEscapeSequence = new EarthEscapeSequence(this);
+        
         // 酒場シーン初期化
         this.tavernScene = new TavernScene(this);
         
         // ルナのボイスをプリロード
         this.voiceSystem.preloadCharacterVoices('luna').then(() => {
             console.log('Luna voices loaded successfully! CV: 日向ここあ');
-            // ルナとの通信を有効化
-            this.companionSystem.activate();
+            // ルナとの通信はストーリーイベントで有効化される
         });
         
         // sceneにgame参照を追加（アイテム用）
@@ -276,12 +296,19 @@ export class Game {
         // ゾーンマネージャーを初期化
         this.zoneManager.init();
         
-        // ウェーブシステムを開始（初回は3秒後）
-        setTimeout(() => {
-            if (this.waveManager) {
-                this.waveManager.startNextWave();
-            }
-        }, 3000);
+        // 地球脱出シーケンスを開始（初回プレイ時）
+        const hasSeenEscapeSequence = localStorage.getItem('hasSeenEscapeSequence');
+        if (!hasSeenEscapeSequence) {
+            this.earthEscapeSequence.start();
+            localStorage.setItem('hasSeenEscapeSequence', 'true');
+        } else {
+            // 通常のウェーブシステムを開始（3秒後）
+            setTimeout(() => {
+                if (this.waveManager) {
+                    this.waveManager.startNextWave();
+                }
+            }, 3000);
+        }
         
         // 初回起動時のストーリー開始
         const hasSeenIntro = localStorage.getItem('hasSeenIntro');
@@ -291,10 +318,25 @@ export class Game {
                     // イントロ完了後、信号受信イベント
                     setTimeout(() => {
                         this.storyDialogue.startDialogue('intro_signal');
+                        // 初期目標を設定
+                        this.storyObjectivesUI.setObjective('intro');
                     }, 5000);
                 });
                 localStorage.setItem('hasSeenIntro', 'true');
             }, 1000);
+        } else {
+            // 既にイントロを見ている場合、現在のフェーズに応じた目標を設定
+            if (this.storySystem && this.storySystem.storyFlags.hasMetLuna) {
+                if (this.storySystem.storyFlags.darkNebulaEncountered) {
+                    this.storyObjectivesUI.setObjective('dark_nebula_encounter');
+                } else if (this.storySystem.storyFlags.marsUnlocked) {
+                    this.storyObjectivesUI.setObjective('mars_investigation');
+                } else {
+                    this.storyObjectivesUI.setObjective('luna_meeting');
+                }
+            } else {
+                this.storyObjectivesUI.setObjective('intro');
+            }
         }
         
         // Gameインスタンスをグローバルに登録（他のシステムから参照可能に）
@@ -330,7 +372,7 @@ export class Game {
         const planet1 = new Planet(this.scene, new THREE.Vector3(200, 0, -300), {
             radius: 30,
             color: 0x0066ff,
-            name: 'アクア',
+            name: '地球',
             hasAtmosphere: true,
             hasRings: false
         });
@@ -339,7 +381,7 @@ export class Game {
         const planet2 = new Planet(this.scene, new THREE.Vector3(-400, 50, 200), {
             radius: 40,
             color: 0xff6600,
-            name: 'マーズ',
+            name: '火星',
             hasAtmosphere: false,
             hasRings: true,
             locked: true, // 初期状態ではロック
@@ -624,6 +666,10 @@ export class Game {
             // 惑星の発見チェック
             if (this.player && planet.mesh.position.distanceTo(this.player.group.position) < 200) {
                 this.warpSystem.discoverLocation(planet);
+                // 銀河マップにも通知
+                if (this.galaxyMap) {
+                    this.galaxyMap.discoverLocation(planet);
+                }
             }
         });
         
@@ -634,6 +680,7 @@ export class Game {
             // ステーションの発見チェック
             if (this.player && station.group.position.distanceTo(this.player.group.position) < 150) {
                 this.warpSystem.discoverLocation(station);
+                // 銀河マップにも通知（ステーションは銀河マップには表示しない）
             }
         });
         
@@ -686,6 +733,8 @@ export class Game {
                     if (this.companionSystem) {
                         this.companionSystem.onItemPickup(result.type);
                     }
+                    // 統計情報更新
+                    this.statistics.itemsCollected++;
                 }
                 // HP更新
                 this.updateHealth(this.player.health, this.player.maxHealth);
@@ -720,6 +769,11 @@ export class Game {
                 // 統計情報更新
                 this.statistics.enemiesKilled++;
                 this.statistics.creditsEarned += credits;
+                
+                // ストーリー目標の更新
+                if (this.storyObjectivesUI) {
+                    this.storyObjectivesUI.onEnemyDefeated();
+                }
                 
                 // 経験値獲得
                 if (this.skillTreeSystem) {
@@ -890,6 +944,21 @@ export class Game {
         // 相棒システム更新
         if (this.companionSystem) {
             this.companionSystem.update(delta);
+        }
+        
+        // ストーリーイベントトリガー更新
+        if (this.storyEventTrigger) {
+            this.storyEventTrigger.update(delta);
+        }
+        
+        // コンパニオンインタラクション更新
+        if (this.companionInteractions) {
+            this.companionInteractions.update(delta);
+        }
+        
+        // 実績システム更新
+        if (this.achievementSystem) {
+            this.achievementSystem.update(delta);
         }
 
         // レンダリング

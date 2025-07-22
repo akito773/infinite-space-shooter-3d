@@ -7,6 +7,7 @@ export class WaveManager {
         this.waveStartTime = 0;
         this.waveComplete = false;
         this.bossWaveInterval = 5; // 5ウェーブごとにボス
+        this.enabled = true; // ウェーブシステムの有効/無効
         
         this.waveConfigs = [
             { normalEnemies: 3, fastEnemies: 0, strongEnemies: 0 },

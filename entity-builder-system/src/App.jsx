@@ -6,12 +6,15 @@ import { store } from './store';
 import Scene from './components/Scene';
 import Toolbar from './components/Toolbar';
 import PropertiesPanel from './components/PropertiesPanel';
+import ShortcutHelper from './components/ShortcutHelper';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import './App.css';
 
-function App() {
+function AppContent() {
+  useKeyboardShortcuts();
+  
   return (
-    <Provider store={store}>
-      <div className="app">
+    <div className="app">
         <div className="header">
           <h1>Entity Builder - 3D Prototype Tool</h1>
         </div>
@@ -57,7 +60,16 @@ function App() {
           
           <PropertiesPanel />
         </div>
+        
+        <ShortcutHelper />
       </div>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
     </Provider>
   );
 }

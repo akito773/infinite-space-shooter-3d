@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateObject, deleteObject } from '../store';
+import { 
+  updateObject, 
+  deleteObject, 
+  updateBone, 
+  deleteBone, 
+  copyMaterial, 
+  pasteMaterial,
+  addFavoriteProfile,
+  removeFavoriteProfile,
+  applyMaterialToMultiple,
+  generateRandomMaterial
+} from '../store';
 import * as THREE from 'three';
 import { validateShipSize } from '../utils/shipGenerator';
+import { MATERIAL_PRESETS, getPresetsByCategory } from '../utils/materialPresets';
+import MaterialPreview from './MaterialPreview';
 
 function PropertiesPanel() {
   const dispatch = useDispatch();
   const selectedObjectId = useSelector(state => state.scene.selectedObjectId);
   const objects = useSelector(state => state.scene.objects);
   const selectedObject = objects.find(obj => obj.id === selectedObjectId);
+  
+  const selectedBoneId = useSelector(state => state.scene.selectedBoneId);
+  const bones = useSelector(state => state.scene.bones);
+  const selectedBone = bones.find(b => b.id === selectedBoneId);
+  const editMode = useSelector(state => state.scene.editMode);
+  const bindings = useSelector(state => state.scene.bindings);
+  const materialClipboard = useSelector(state => state.scene.materialClipboard);
+  const favoriteProfiles = useSelector(state => state.scene.favoriteProfiles);
+  const recentProfiles = useSelector(state => state.scene.recentProfiles);
+  const selectedObjectIds = useSelector(state => state.scene.selectedObjectIds);
   
   const [promptText, setPromptText] = useState('');
 
@@ -157,6 +180,134 @@ photorealistic sci-fi military spacecraft finish, suitable for space combat game
     }
   };
 
+  const handleBoneInputChange = (property, value, index = null) => {
+    if (!selectedBone) return;
+    
+    let updates = {};
+    
+    if (index !== null) {
+      const newArray = [...selectedBone[property]];
+      newArray[index] = parseFloat(value) || 0;
+      updates[property] = newArray;
+    } else {
+      updates[property] = value;
+    }
+    
+    dispatch(updateBone({
+      id: selectedBone.id,
+      updates
+    }));
+  };
+
+  const handleBoneDelete = () => {
+    if (selectedBone) {
+      dispatch(deleteBone(selectedBone.id));
+    }
+  };
+
+  // ボーン編集モードの場合
+  if (editMode === 'bone' && selectedBone) {
+    return (
+      <div className="properties-panel">
+        <div className="property-group">
+          <h3>Bone: {selectedBone.name}</h3>
+          
+          <div className="property-row">
+            <span className="property-label">Name:</span>
+            <input
+              className="property-input"
+              type="text"
+              value={selectedBone.name}
+              onChange={(e) => handleBoneInputChange('name', e.target.value)}
+            />
+          </div>
+          
+          <div className="property-row">
+            <span className="property-label">Length:</span>
+            <input
+              className="property-input"
+              type="number"
+              step="0.1"
+              value={selectedBone.length}
+              onChange={(e) => handleBoneInputChange('length', parseFloat(e.target.value))}
+            />
+          </div>
+        </div>
+
+        <div className="property-group">
+          <h3>Transform</h3>
+          
+          {['position', 'rotation'].map(prop => (
+            <div key={prop}>
+              <div className="property-row">
+                <span className="property-label">{prop}:</span>
+              </div>
+              <div className="property-row">
+                {['X', 'Y', 'Z'].map((axis, index) => (
+                  <input
+                    key={axis}
+                    className="property-input"
+                    type="number"
+                    step={prop === 'rotation' ? '0.1' : '0.01'}
+                    value={selectedBone[prop][index].toFixed(2)}
+                    onChange={(e) => handleBoneInputChange(prop, e.target.value, index)}
+                    placeholder={axis}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="property-group">
+          <h3>Bone Info</h3>
+          <div className="size-info">
+            <div>Total Bones: {bones.length}</div>
+            <div>Parent: {selectedBone.parent ? bones.find(b => b.id === selectedBone.parent)?.name : 'None'}</div>
+            <div>Children: {selectedBone.children.length}</div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20 }}>
+          <button className="button" onClick={handleBoneDelete}>
+            Delete Bone
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ボーン編集モードだが選択されていない場合
+  if (editMode === 'bone') {
+    return (
+      <div className="properties-panel">
+        <h3>Bone Properties</h3>
+        <p style={{ color: '#666', fontSize: '13px' }}>
+          Select a bone to edit properties
+        </p>
+        
+        <div className="property-group">
+          <h3>Skeleton Info</h3>
+          <div className="size-info">
+            <div>Total Bones: {bones.length}</div>
+          </div>
+        </div>
+        
+        {bindings && bindings.length > 0 && (
+          <div className="property-group">
+            <h3>Binding Info</h3>
+            <div className="size-info">
+              <div>Total Bindings: {bindings.length}</div>
+              <div style={{ fontSize: '11px', marginTop: '5px' }}>
+                Purple lines show mesh-bone connections
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (!selectedObject) {
     return (
       <div className="properties-panel">
@@ -243,6 +394,41 @@ photorealistic sci-fi military spacecraft finish, suitable for space combat game
       <div className="property-group">
         <h3>Material</h3>
         
+        <MaterialPreview material={selectedObject.material} />
+        
+        <div className="property-row">
+          <span className="property-label">Preset:</span>
+          <select 
+            className="property-input"
+            onChange={(e) => {
+              if (e.target.value && MATERIAL_PRESETS[e.target.value]) {
+                const preset = MATERIAL_PRESETS[e.target.value];
+                const updates = {
+                  material: {
+                    ...selectedObject.material,
+                    ...preset.properties
+                  }
+                };
+                dispatch(updateObject({
+                  id: selectedObject.id,
+                  updates
+                }));
+              }
+            }}
+          >
+            <option value="">-- Select Preset --</option>
+            {Object.entries(getPresetsByCategory()).map(([category, presets]) => (
+              <optgroup key={category} label={category}>
+                {presets.map(preset => (
+                  <option key={preset.key} value={preset.key}>
+                    {preset.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+        
         <div className="property-row">
           <span className="property-label">Color:</span>
           <input
@@ -251,6 +437,9 @@ photorealistic sci-fi military spacecraft finish, suitable for space combat game
             value={selectedObject.material.color}
             onChange={(e) => handleInputChange('material.color', e.target.value)}
           />
+          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#888' }}>
+            {selectedObject.material.color}
+          </span>
         </div>
         
         <div className="property-row">
@@ -261,9 +450,12 @@ photorealistic sci-fi military spacecraft finish, suitable for space combat game
             min="0"
             max="1"
             step="0.01"
-            value={selectedObject.material.metalness}
+            value={selectedObject.material.metalness || 0.5}
             onChange={(e) => handleInputChange('material.metalness', parseFloat(e.target.value))}
           />
+          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#888' }}>
+            {(selectedObject.material.metalness || 0.5).toFixed(2)}
+          </span>
         </div>
         
         <div className="property-row">
@@ -274,9 +466,219 @@ photorealistic sci-fi military spacecraft finish, suitable for space combat game
             min="0"
             max="1"
             step="0.01"
-            value={selectedObject.material.roughness}
+            value={selectedObject.material.roughness || 0.5}
             onChange={(e) => handleInputChange('material.roughness', parseFloat(e.target.value))}
           />
+          <span style={{ marginLeft: '10px', fontSize: '12px', color: '#888' }}>
+            {(selectedObject.material.roughness || 0.5).toFixed(2)}
+          </span>
+        </div>
+        
+        <div className="property-row">
+          <span className="property-label">Emissive:</span>
+          <input
+            className="property-input"
+            type="color"
+            value={selectedObject.material.emissive || '#000000'}
+            onChange={(e) => handleInputChange('material.emissive', e.target.value)}
+          />
+          <input
+            className="property-input"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            style={{ width: '80px', marginLeft: '10px' }}
+            value={selectedObject.material.emissiveIntensity || 0}
+            onChange={(e) => handleInputChange('material.emissiveIntensity', parseFloat(e.target.value))}
+          />
+        </div>
+        
+        {(selectedObject.material.transparent) && (
+          <>
+            <div className="property-row">
+              <span className="property-label">Transparent:</span>
+              <input
+                type="checkbox"
+                checked={selectedObject.material.transparent || false}
+                onChange={(e) => handleInputChange('material.transparent', e.target.checked)}
+              />
+            </div>
+            
+            <div className="property-row">
+              <span className="property-label">Opacity:</span>
+              <input
+                className="property-input"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={selectedObject.material.opacity || 1}
+                onChange={(e) => handleInputChange('material.opacity', parseFloat(e.target.value))}
+              />
+              <span style={{ marginLeft: '10px', fontSize: '12px', color: '#888' }}>
+                {(selectedObject.material.opacity || 1).toFixed(2)}
+              </span>
+            </div>
+          </>
+        )}
+        
+        {/* お気に入りマテリアル */}
+        {favoriteProfiles.length > 0 && (
+          <div className="property-row">
+            <span className="property-label">Favorites:</span>
+            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', flex: 1 }}>
+              {favoriteProfiles.map(profile => (
+                <div 
+                  key={profile.id}
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    backgroundColor: profile.color,
+                    border: '2px solid #555',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    dispatch(updateObject({
+                      id: selectedObject.id,
+                      updates: { material: { ...profile } }
+                    }));
+                  }}
+                  title={profile.name}
+                >
+                  <button
+                    style={{
+                      position: 'absolute',
+                      top: '-5px',
+                      right: '-5px',
+                      width: '16px',
+                      height: '16px',
+                      background: '#ff0000',
+                      border: 'none',
+                      borderRadius: '50%',
+                      color: 'white',
+                      fontSize: '10px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dispatch(removeFavoriteProfile(profile.id));
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* 最近使用したマテリアル */}
+        {recentProfiles.length > 0 && (
+          <div className="property-row">
+            <span className="property-label">Recent:</span>
+            <div style={{ display: 'flex', gap: '5px', flex: 1 }}>
+              {recentProfiles.map((profile, index) => (
+                <div 
+                  key={profile.id}
+                  style={{
+                    width: '25px',
+                    height: '25px',
+                    backgroundColor: profile.color,
+                    border: '1px solid #555',
+                    borderRadius: '3px',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    dispatch(updateObject({
+                      id: selectedObject.id,
+                      updates: { material: { ...profile } }
+                    }));
+                  }}
+                  title={`Recent ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="property-row" style={{ marginTop: '10px', gap: '5px', flexWrap: 'wrap' }}>
+          <button 
+            className="button" 
+            style={{ fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => {
+              const updates = {
+                material: {
+                  transparent: !selectedObject.material.transparent,
+                  opacity: selectedObject.material.transparent ? 1 : 0.5
+                }
+              };
+              dispatch(updateObject({
+                id: selectedObject.id,
+                updates
+              }));
+            }}
+          >
+            Toggle Transparency
+          </button>
+          
+          <button 
+            className="button" 
+            style={{ fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => dispatch(copyMaterial(selectedObject.id))}
+          >
+            Copy
+          </button>
+          
+          <button 
+            className="button" 
+            style={{ fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => dispatch(pasteMaterial(selectedObject.id))}
+            disabled={!materialClipboard}
+          >
+            Paste
+          </button>
+          
+          <button 
+            className="button" 
+            style={{ fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => {
+              const name = prompt('お気に入りの名前を入力:');
+              if (name) {
+                dispatch(addFavoriteProfile({ ...selectedObject.material, name }));
+              }
+            }}
+          >
+            ★ Add Favorite
+          </button>
+          
+          <button 
+            className="button" 
+            style={{ fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => dispatch(generateRandomMaterial(selectedObject.id))}
+          >
+            🎲 Random
+          </button>
+          
+          {selectedObjectIds.length > 0 && (
+            <button 
+              className="button" 
+              style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#cc6600' }}
+              onClick={() => {
+                dispatch(applyMaterialToMultiple({
+                  material: selectedObject.material,
+                  objectIds: [selectedObject.id, ...selectedObjectIds]
+                }));
+              }}
+            >
+              Apply to {selectedObjectIds.length + 1} objects
+            </button>
+          )}
         </div>
       </div>
 

@@ -16,6 +16,11 @@ export class LandingSystem {
     
     setGame(game) {
         this.game = game;
+        // LandingMenuをゲームインスタンスに登録
+        if (!this.landingMenu && game) {
+            this.landingMenu = new LandingMenu(game);
+            game.landingMenu = this.landingMenu;
+        }
     }
     
     createLandingUI() {
@@ -229,6 +234,16 @@ export class LandingSystem {
         // 地球や補給基地など、特定の場所は従来のメニューを使用
         const exemptPlanets = ['地球', 'Earth', '補給基地', 'Supply Station'];
         const isExemptPlanet = exemptPlanets.includes(this.currentTarget.name);
+        
+        // ストーリー目標UIに着陸を通知
+        if (this.game && this.game.storyObjectivesUI) {
+            this.game.storyObjectivesUI.onPlanetLanded(this.currentTarget.name);
+        }
+        
+        // ストーリーシステムに着陸を通知
+        if (this.game && this.game.landingSystem) {
+            this.game.landingSystem.hasLanded = true;
+        }
         
         if (this.currentTarget.type === 'planet' && !isExemptPlanet) {
             // 一般的な惑星は惑星着陸システムを起動

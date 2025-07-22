@@ -8,6 +8,10 @@ export class CompanionSystem {
         this.messageQueue = [];
         this.relationshipLevel = 0; // 0-100
         
+        // 特別な援護攻撃
+        this.specialSupportActive = false;
+        this.specialSupportCooldown = 0;
+        
         // ボイス再生用インデックス管理
         this.lastVoiceIndex = {
             greetings: -1,
@@ -192,6 +196,17 @@ export class CompanionSystem {
         const greetingIndex = Math.floor(Math.random() * this.companion.greetings.length);
         this.showMessage(this.companion.greetings[greetingIndex], 5000, 'greetings', greetingIndex);
         console.log('Companion Luna activated');
+        
+        // 初回起動時のみ操作説明を表示
+        if (!localStorage.getItem('lunaInteractionTutorial')) {
+            setTimeout(() => {
+                this.showMessage(
+                    'Cキーで話しかけたり、Pキーでプレゼントをくれたりできるよ♪',
+                    6000
+                );
+                localStorage.setItem('lunaInteractionTutorial', 'true');
+            }, 6000);
+        }
     }
     
     deactivate() {
@@ -283,6 +298,84 @@ export class CompanionSystem {
         this.increaseTrust(5);
     }
     
+    // 特別な援護攻撃を発動
+    activateSpecialSupport() {
+        if (this.specialSupportCooldown > 0) return;
+        
+        this.specialSupportActive = true;
+        this.specialSupportCooldown = 30000; // 30秒のクールダウン
+        
+        this.showMessage("お父さん...私が助ける！みんな、力を貸して！", 5000, 'special_support');
+        
+        // 特殊援護攻撃の演出
+        this.createSupportEffect();
+        
+        // プレイヤーに一時的なバフを付与
+        if (this.game.player) {
+            const originalDamage = this.game.player.weaponDamage || 10;
+            this.game.player.weaponDamage = originalDamage * 2; // ダメージ2倍
+            this.game.player.invulnerable = true; // 一時無敵
+            
+            setTimeout(() => {
+                this.game.player.weaponDamage = originalDamage;
+                this.game.player.invulnerable = false;
+                this.specialSupportActive = false;
+            }, 5000);
+        }
+    }
+    
+    createSupportEffect() {
+        // 援護攻撃のビジュアルエフェクト
+        const supportUI = document.createElement('div');
+        supportUI.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                rgba(255, 0, 150, 0.3), 
+                transparent 50%);
+            pointer-events: none;
+            z-index: 2000;
+            animation: supportPulse 0.5s ease-out;
+        `;
+        
+        document.body.appendChild(supportUI);
+        
+        // 援護レーザーの演出（仮想的）
+        const laserCount = 5;
+        for (let i = 0; i < laserCount; i++) {
+            setTimeout(() => {
+                const laser = document.createElement('div');
+                laser.style.cssText = `
+                    position: fixed;
+                    top: ${Math.random() * 50}%;
+                    left: -10%;
+                    width: 120%;
+                    height: 3px;
+                    background: linear-gradient(90deg, 
+                        transparent, 
+                        #ff0099 20%, 
+                        #ff66cc 50%, 
+                        #ff0099 80%, 
+                        transparent);
+                    z-index: 2001;
+                    animation: laserSweep 0.3s ease-out;
+                `;
+                document.body.appendChild(laser);
+                
+                setTimeout(() => {
+                    document.body.removeChild(laser);
+                }, 300);
+            }, i * 100);
+        }
+        
+        setTimeout(() => {
+            document.body.removeChild(supportUI);
+        }, 2000);
+    }
+    
     sendCasualMessage() {
         if (!this.isActive) return;
         if (Date.now() - this.lastMessageTime < 20000) return; // 20秒クールダウン（短縮）
@@ -294,6 +387,11 @@ export class CompanionSystem {
     
     increaseTrust(amount) {
         this.relationshipLevel = Math.min(100, this.relationshipLevel + amount);
+        
+        // ストーリー目標UIに信頼度を通知
+        if (this.game && this.game.storyObjectivesUI) {
+            this.game.storyObjectivesUI.onTrustLevelChanged(this.relationshipLevel);
+        }
         
         // 特定の信頼度で特別なメッセージ
         if (this.relationshipLevel === 25) {
@@ -343,6 +441,11 @@ export class CompanionSystem {
             this.onLongFlight();
             this.longFlightCommented = true;
             this.flightStartTime = Date.now();
+        }
+        
+        // 特別援護のクールダウン
+        if (this.specialSupportCooldown > 0) {
+            this.specialSupportCooldown -= deltaTime * 1000;
         }
     }
     
@@ -426,6 +529,18 @@ style.textContent = `
     @keyframes slideOut {
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(-100%); opacity: 0; }
+    }
+    
+    @keyframes supportPulse {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+    
+    @keyframes laserSweep {
+        0% { transform: translateX(-120%) scaleX(0.5); opacity: 0; }
+        50% { transform: translateX(0%) scaleX(1); opacity: 1; }
+        100% { transform: translateX(120%) scaleX(0.5); opacity: 0; }
     }
 `;
 document.head.appendChild(style);

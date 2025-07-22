@@ -347,9 +347,28 @@ export class GameGuide {
                         <tr><td><span class="key-binding">H</span></td><td>ヘルプ表示</td></tr>
                         <tr><td><span class="key-binding">I</span></td><td>インベントリ</td></tr>
                         <tr><td><span class="key-binding">G</span></td><td>このガイド</td></tr>
+                        <tr><td><span class="key-binding">M</span></td><td>銀河マップ / ワープ</td></tr>
+                        <tr><td><span class="key-binding">E</span></td><td>惑星/ステーションに着陸</td></tr>
                         <tr><td><span class="key-binding">F</span></td><td>ステーション/ワープゲートとインタラクト</td></tr>
                         <tr><td><span class="key-binding">S</span></td><td>Deep Spaceスキャン</td></tr>
                     </table>
+                    
+                    <h4>ルナ（相棒）との交流</h4>
+                    <p>ルナは宇宙ステーションの酒場で出会うことができます。</p>
+                    <table class="guide-table">
+                        <tr><th>キー</th><th>操作</th><th>条件</th></tr>
+                        <tr><td><span class="key-binding">C</span></td><td>会話メニュー</td><td>ルナが仲間になった後</td></tr>
+                        <tr><td><span class="key-binding">P</span></td><td>プレゼントメニュー</td><td>ルナが仲間になった後</td></tr>
+                    </table>
+                    
+                    <div class="guide-tip">
+                        💡 ヒント: ルナと出会うには、宇宙ステーション（🛸）に着陸（Eキー）して「酒場で情報収集」を選択しましょう！<br>
+                        初回訪問時に特別なイベントが発生します。
+                    </div>
+                    
+                    <div class="guide-tip">
+                        💡 ヒント: ルナとの信頼度を上げると、特別な会話や援護攻撃が解放されます！
+                    </div>
                     
                     <div class="guide-tip">
                         💡 ヒント: マウスでの照準が難しい場合は、感度を調整してみましょう！

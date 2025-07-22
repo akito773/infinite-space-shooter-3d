@@ -122,6 +122,38 @@ body {
   border-color: #0066cc;
 }
 
+select.property-input {
+  cursor: pointer;
+}
+
+select.property-input option {
+  background-color: #333;
+  color: #fff;
+}
+
+select.property-input optgroup {
+  background-color: #222;
+  color: #aaa;
+  font-weight: bold;
+}
+
+input[type="range"].property-input {
+  padding: 0;
+  height: 20px;
+}
+
+input[type="color"].property-input {
+  padding: 2px;
+  cursor: pointer;
+  width: 60px;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .size-info {
   background-color: #333;
   border-radius: 4px;
@@ -171,4 +203,28 @@ body {
 
 .button:active {
   background-color: #004080;
+}
+
+.bone-info {
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px;
+  font-size: 12px;
+  color: #ccc;
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  z-index: 100;
+}
+
+.bone-info h4 {
+  margin: 0 0 5px 0;
+  color: #fff;
+  font-size: 14px;
+}
+
+.bone-info div {
+  margin: 2px 0;
 }

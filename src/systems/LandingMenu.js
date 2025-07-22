@@ -279,13 +279,24 @@ export class LandingMenu {
             case 'shop':
                 this.close();
                 if (this.game.shopSystem) {
-                    this.game.shopSystem.open();
+                    this.game.shopSystem.open(true);  // 着陸メニューから開いたことを伝える
                 }
                 break;
                 
             case 'tavern':
                 this.close();
-                this.dialogueSystem.startDialogue('merchant', 'first', '酒場');
+                // ルナとまだ出会っていない場合は出会いイベント
+                if (this.game.storySystem && !this.game.storySystem.storyFlags.hasMetLuna) {
+                    // ルナとの出会いイベントをトリガー
+                    if (this.game.storyEventTrigger) {
+                        this.game.storyEventTrigger.forceEvent('earth_first_landing');
+                    } else if (this.game.triggerTavernMeeting) {
+                        this.game.triggerTavernMeeting();
+                    }
+                } else {
+                    // すでに出会っている場合は通常の酒場会話
+                    this.dialogueSystem.startDialogue('merchant', 'first', '酒場');
+                }
                 break;
                 
             case 'lab':

@@ -271,6 +271,25 @@ export class ShopSystem {
         closeButton.textContent = '×';
         closeButton.addEventListener('click', () => this.close());
         
+        // 戻るボタン（ステーションメニューから開かれた場合）
+        this.returnButton = document.createElement('button');
+        this.returnButton.style.cssText = `
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, rgba(0, 100, 200, 0.8), rgba(0, 150, 255, 0.8));
+            color: white;
+            border: 2px solid #00aaff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        `;
+        this.returnButton.textContent = '← ステーションに戻る';
+        this.returnButton.addEventListener('click', () => this.returnToStation());
+        
         // スタイル追加
         if (!document.querySelector('#shop-styles')) {
             const style = document.createElement('style');
@@ -354,6 +373,7 @@ export class ShopSystem {
         shopWindow.appendChild(header);
         shopWindow.appendChild(mainContent);
         shopWindow.appendChild(closeButton);
+        shopWindow.appendChild(this.returnButton);
         
         this.shopContainer.appendChild(shopWindow);
         document.body.appendChild(this.shopContainer);
@@ -372,10 +392,18 @@ export class ShopSystem {
         });
     }
     
-    open() {
+    open(fromLandingMenu = false) {
         this.isOpen = true;
         this.game.isPaused = true;
         this.shopContainer.style.display = 'block';
+        this.openedFromLandingMenu = fromLandingMenu;
+        
+        // 着陸メニューから開かれた場合は戻るボタンを表示
+        if (fromLandingMenu) {
+            this.returnButton.style.display = 'block';
+        } else {
+            this.returnButton.style.display = 'none';
+        }
         
         // フェードイン
         this.shopContainer.style.opacity = '0';
@@ -605,5 +633,15 @@ export class ShopSystem {
         setTimeout(() => {
             message.remove();
         }, 1500);
+    }
+    
+    returnToStation() {
+        this.close();
+        // 着陸メニューを再度開く
+        if (this.game.landingMenu && this.game.landingMenu.currentLocation) {
+            setTimeout(() => {
+                this.game.landingMenu.open(this.game.landingMenu.currentLocation);
+            }, 300);
+        }
     }
 }

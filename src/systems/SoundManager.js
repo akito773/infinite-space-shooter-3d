@@ -175,7 +175,13 @@ export class SoundManager {
             boss: 'assets/bgm/boss_battle_theme.wav',
             raidBoss: 'assets/bgm/raid_boss_theme.wav',
             tavern: 'assets/bgm/tavern_jazz_theme.wav',
-            planet: 'assets/bgm/planet_exploration_theme.wav'
+            planet: 'assets/bgm/planet_exploration_theme.wav',
+            mars: 'assets/bgm/mars_theme.wav',
+            jupiter: 'assets/bgm/jupiter_theme.wav',
+            saturn: 'assets/bgm/saturn_theme.wav',
+            finalBattle: 'assets/bgm/final_battle_theme.wav',
+            victory: 'assets/bgm/victory_theme.wav',
+            gameover: 'assets/bgm/gameover_theme.wav'
         };
         
         // 各BGMのAudioオブジェクトを作成

@@ -10,7 +10,15 @@ export class StoryProgressionSystem {
             raidBossDefeated: false,
             marsUnlocked: false,
             dataFragmentsCollected: 0,
-            voidOriginDiscovered: false
+            voidOriginDiscovered: false,
+            // 新しいストーリーフラグ
+            hasMetLuna: false,
+            darkNebulaEncountered: false,
+            darkNebulaIdentityRevealed: false,
+            jupiterUnlocked: false,
+            saturnUnlocked: false,
+            ancientSealCount: 0,
+            lunaFatherSaved: false
         };
         
         // 現在のストーリーフェーズ

@@ -1,24 +1,111 @@
-import React, { useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useRef, useEffect, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { useFrame } from '@react-three/fiber';
-import { TransformControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { TransformControls } from '@react-three/drei';
 import { selectObject, updateObject, toggleMultiSelect } from '../store';
 
-function SceneObject({ object }) {
+function AnimatedObject({ object }) {
   const meshRef = useRef();
   const groupRef = useRef();
   const transformRef = useRef();
   const dispatch = useDispatch();
+  
   const objects = useSelector(state => state.scene.objects);
+  const bones = useSelector(state => state.scene.bones);
+  const bindings = useSelector(state => state.scene.bindings);
   const selectedObjectId = useSelector(state => state.scene.selectedObjectId);
   const selectedObjectIds = useSelector(state => state.scene.selectedObjectIds);
   const transformMode = useSelector(state => state.scene.transformMode);
   const isSelected = selectedObjectId === object.id;
   const isMultiSelected = selectedObjectIds.includes(object.id);
+  const isPlaying = useSelector(state => state.scene.isPlaying);
   
-  const [hovered, setHovered] = useState(false);
-
+  const [hovered, setHovered] = React.useState(false);
+  
+  // このオブジェクトのバインディングを取得
+  const objectBindings = useMemo(() => {
+    return bindings.filter(b => b.meshId === object.id);
+  }, [bindings, object.id]);
+  
+  // 初期トランスフォームを保存
+  const initialTransform = useRef({
+    position: [...object.position],
+    rotation: [...object.rotation],
+    scale: [...object.scale],
+  });
+  
+  // ボーンのワールドトランスフォームを計算
+  const getBoneWorldMatrix = (boneId) => {
+    const bone = bones.find(b => b.id === boneId);
+    if (!bone) return new THREE.Matrix4();
+    
+    const matrix = new THREE.Matrix4();
+    const position = new THREE.Vector3(...bone.position);
+    const rotation = new THREE.Euler(...bone.rotation);
+    const scale = new THREE.Vector3(1, 1, 1);
+    
+    matrix.compose(position, new THREE.Quaternion().setFromEuler(rotation), scale);
+    
+    // 親ボーンの変換を適用
+    let currentBone = bone;
+    while (currentBone.parent) {
+      const parent = bones.find(b => b.id === currentBone.parent);
+      if (!parent) break;
+      
+      const parentMatrix = new THREE.Matrix4();
+      const parentPos = new THREE.Vector3(...parent.position);
+      const parentRot = new THREE.Euler(...parent.rotation);
+      parentMatrix.compose(parentPos, new THREE.Quaternion().setFromEuler(parentRot), new THREE.Vector3(1, 1, 1));
+      
+      matrix.premultiply(parentMatrix);
+      currentBone = parent;
+    }
+    
+    return matrix;
+  };
+  
+  // アニメーション更新
+  useFrame(() => {
+    if (!isPlaying || objectBindings.length === 0 || !meshRef.current) return;
+    
+    // 複数のボーンからの影響を計算
+    let finalPosition = new THREE.Vector3();
+    let finalQuaternion = new THREE.Quaternion();
+    let totalWeight = 0;
+    
+    objectBindings.forEach((binding, index) => {
+      const boneMatrix = getBoneWorldMatrix(binding.boneId);
+      const bonePosition = new THREE.Vector3();
+      const boneQuaternion = new THREE.Quaternion();
+      const boneScale = new THREE.Vector3();
+      
+      boneMatrix.decompose(bonePosition, boneQuaternion, boneScale);
+      
+      // 初期位置からのオフセットを適用
+      const offsetPosition = new THREE.Vector3(...initialTransform.current.position);
+      offsetPosition.applyQuaternion(boneQuaternion);
+      bonePosition.add(offsetPosition);
+      
+      // ウェイトに基づいて加算
+      finalPosition.add(bonePosition.multiplyScalar(binding.weight));
+      
+      if (index === 0) {
+        finalQuaternion.copy(boneQuaternion);
+      } else {
+        finalQuaternion.slerp(boneQuaternion, binding.weight / (totalWeight + binding.weight));
+      }
+      
+      totalWeight += binding.weight;
+    });
+    
+    // 最終的な変換を適用
+    if (totalWeight > 0) {
+      meshRef.current.position.copy(finalPosition.divideScalar(totalWeight));
+      meshRef.current.quaternion.copy(finalQuaternion);
+    }
+  });
+  
   const getGeometry = () => {
     const args = object.geometry.args || [1, 1, 1];
     
@@ -37,18 +124,16 @@ function SceneObject({ object }) {
         return new THREE.BoxGeometry(1, 1, 1);
     }
   };
-
+  
   const handleClick = (e) => {
     e.stopPropagation();
     if (e.ctrlKey || e.metaKey) {
-      // Ctrl/Cmdキーが押されている場合は複数選択
       dispatch(toggleMultiSelect(object.id));
     } else {
-      // 通常クリックは単一選択
       dispatch(selectObject(object.id));
     }
   };
-
+  
   const handleTransformChange = () => {
     const targetRef = object.geometry.type === 'group' ? groupRef : meshRef;
     if (transformRef.current && targetRef.current) {
@@ -66,11 +151,11 @@ function SceneObject({ object }) {
       }));
     }
   };
-
+  
   // 子オブジェクトを取得
   const children = object.children ? 
     objects.filter(obj => object.children.includes(obj.id)) : [];
-
+  
   // グループタイプの場合
   if (object.geometry.type === 'group') {
     return (
@@ -83,7 +168,7 @@ function SceneObject({ object }) {
           onClick={handleClick}
         >
           {children.map(child => (
-            <SceneObject key={child.id} object={child} />
+            <AnimatedObject key={child.id} object={child} />
           ))}
         </group>
         
@@ -98,14 +183,14 @@ function SceneObject({ object }) {
       </>
     );
   }
-
+  
   // 通常のメッシュ
   return (
     <>
       <mesh
         ref={meshRef}
-        position={object.position}
-        rotation={object.rotation}
+        position={objectBindings.length === 0 || !isPlaying ? object.position : [0, 0, 0]}
+        rotation={objectBindings.length === 0 || !isPlaying ? object.rotation : [0, 0, 0]}
         scale={object.scale}
         onClick={handleClick}
         onPointerOver={() => setHovered(true)}
@@ -125,7 +210,7 @@ function SceneObject({ object }) {
         />
       </mesh>
       
-      {isSelected && (
+      {isSelected && !isPlaying && (
         <TransformControls
           ref={transformRef}
           object={meshRef.current}
@@ -137,4 +222,4 @@ function SceneObject({ object }) {
   );
 }
 
-export default SceneObject;
+export default AnimatedObject;

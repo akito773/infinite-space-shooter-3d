@@ -678,4 +678,86 @@ export class GalaxyMap {
             this.game.zoneManager.travelToZone(this.selectedZone.id);
         }
     }
+    
+    // 惑星を発見したときに呼ぶ
+    discoverLocation(location) {
+        const zone = this.zones.find(z => 
+            z.japaneseName === location.name || 
+            z.name === location.name ||
+            z.realName === location.name
+        );
+        
+        if (zone && !zone.discovered) {
+            zone.discovered = true;
+            
+            // 発見通知
+            this.showDiscoveryNotification(zone.japaneseName);
+            
+            // 銀河マップを更新
+            if (this.isOpen) {
+                this.draw();
+            }
+            
+            return true;
+        }
+        return false;
+    }
+    
+    // 発見通知を表示
+    showDiscoveryNotification(planetName) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(0,255,0,0.9), rgba(0,200,0,0.9));
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 5000;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5);
+            animation: discoveryPulse 0.5s ease-out;
+        `;
+        notification.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 5px;">🔭 新発見！</div>
+                <div>${planetName}を発見しました！</div>
+            </div>
+        `;
+        
+        // アニメーションスタイル
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes discoveryPulse {
+                0% { transform: translateX(-50%) scale(0); opacity: 0; }
+                50% { transform: translateX(-50%) scale(1.1); }
+                100% { transform: translateX(-50%) scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // 音声再生
+        if (this.game.soundManager) {
+            this.game.soundManager.play('discovery');
+        }
+        
+        // ルナの反応
+        if (this.game.companionSystem && this.game.companionSystem.isActive) {
+            this.game.companionSystem.onDiscovery();
+        }
+        
+        // 4秒後に通知を削除
+        setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.5s ease-in';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+                document.head.removeChild(style);
+            }, 500);
+        }, 4000);
+    }
 }

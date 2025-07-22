@@ -5,11 +5,24 @@ import { addObject, addMultipleObjects, clearScene, setTransformMode } from '../
 import { generatePlayerShip } from '../utils/shipGenerator';
 import { generateAdvancedPlayerShip, generateHumanoidRobot } from '../utils/shipGeneratorAdvanced';
 import { exportSceneAsGLTF, createExportScene } from '../utils/exporter';
+import { generateRobotSkeleton } from '../utils/boneSystem';
+import { generateAutoBindings, normalizeWeights } from '../utils/boneMeshMapping';
+import { generateWalkAnimation, generateIdleAnimation } from '../utils/animationSystem';
+import { 
+  addMultipleBones, clearBones, setEditMode, setShowBones, 
+  addMultipleBindings, clearBindings,
+  addAnimation, setCurrentAnimation, setIsPlaying, clearAnimations
+} from '../store';
 
 function Toolbar() {
   const dispatch = useDispatch();
   const transformMode = useSelector(state => state.scene.transformMode);
   const objects = useSelector(state => state.scene.objects);
+  const editMode = useSelector(state => state.scene.editMode);
+  const showBones = useSelector(state => state.scene.showBones);
+  const bones = useSelector(state => state.scene.bones);
+  const animations = useSelector(state => state.scene.animations);
+  const isPlaying = useSelector(state => state.scene.isPlaying);
 
   const createPrimitive = (type, args) => {
     const newObject = {
@@ -54,9 +67,78 @@ function Toolbar() {
     const confirmation = window.confirm('This will clear the current scene and create a humanoid robot. Continue?');
     if (confirmation) {
       dispatch(clearScene());
+      dispatch(clearBones());
       const robotObjects = generateHumanoidRobot();
       dispatch(addMultipleObjects(robotObjects));
     }
+  };
+
+  const createRobotBones = () => {
+    const hasRobot = objects.some(obj => obj.name === 'Humanoid_Robot');
+    if (!hasRobot) {
+      alert('Please generate a robot first!');
+      return;
+    }
+    
+    const confirmation = window.confirm('This will add a skeleton to the robot. Continue?');
+    if (confirmation) {
+      dispatch(clearBones());
+      dispatch(clearBindings());
+      const newBones = generateRobotSkeleton();
+      dispatch(addMultipleBones(newBones));
+      dispatch(setEditMode('bone'));
+    }
+  };
+
+  const bindMeshesToBones = () => {
+    if (bones.length === 0) {
+      alert('Please add bones first!');
+      return;
+    }
+    
+    if (objects.length === 0) {
+      alert('No objects to bind!');
+      return;
+    }
+    
+    const confirmation = window.confirm('This will automatically bind robot parts to bones. Continue?');
+    if (confirmation) {
+      dispatch(clearBindings());
+      const bindings = generateAutoBindings(objects, bones);
+      const normalizedBindings = normalizeWeights(bindings);
+      dispatch(addMultipleBindings(normalizedBindings));
+      alert(`Created ${normalizedBindings.length} bindings!`);
+    }
+  };
+
+  const createAnimations = () => {
+    if (bones.length === 0) {
+      alert('Please add bones first!');
+      return;
+    }
+    
+    const confirmation = window.confirm('This will create walk and idle animations. Continue?');
+    if (confirmation) {
+      dispatch(clearAnimations());
+      
+      const walkAnim = generateWalkAnimation(bones);
+      const idleAnim = generateIdleAnimation(bones);
+      
+      dispatch(addAnimation(walkAnim));
+      dispatch(addAnimation(idleAnim));
+      dispatch(setCurrentAnimation(walkAnim.id));
+      
+      alert('Created Walk and Idle animations!');
+    }
+  };
+
+  const togglePlayAnimation = () => {
+    if (animations.length === 0) {
+      alert('No animations available!');
+      return;
+    }
+    
+    dispatch(setIsPlaying(!isPlaying));
   };
 
   const handleExport = async () => {
@@ -129,6 +211,75 @@ function Toolbar() {
         style={{ backgroundColor: '#00cc00', fontSize: '11px' }}
       >
         Export<br/>GLB
+      </button>
+      
+      <div style={{ height: 20 }} />
+      
+      <button
+        className={`tool-button ${editMode === 'object' ? 'active' : ''}`}
+        onClick={() => dispatch(setEditMode('object'))}
+        title="Object Edit Mode"
+        style={{ fontSize: '11px' }}
+      >
+        Object<br/>Mode
+      </button>
+      
+      <button
+        className={`tool-button ${editMode === 'bone' ? 'active' : ''}`}
+        onClick={() => dispatch(setEditMode('bone'))}
+        title="Bone Edit Mode"
+        style={{ fontSize: '11px' }}
+      >
+        Bone<br/>Mode
+      </button>
+      
+      <div style={{ height: 10 }} />
+      
+      <button
+        className="tool-button"
+        onClick={createRobotBones}
+        title="Add Robot Skeleton"
+        style={{ backgroundColor: '#9900ff', fontSize: '10px' }}
+      >
+        Add<br/>Bones
+      </button>
+      
+      <button
+        className={`tool-button ${showBones ? 'active' : ''}`}
+        onClick={() => dispatch(setShowBones(!showBones))}
+        title="Toggle Bone Visibility"
+        style={{ fontSize: '11px' }}
+      >
+        Show<br/>Bones
+      </button>
+      
+      <button
+        className="tool-button"
+        onClick={bindMeshesToBones}
+        title="Bind Meshes to Bones"
+        style={{ backgroundColor: '#ff00ff', fontSize: '10px' }}
+      >
+        Bind<br/>Mesh
+      </button>
+      
+      <div style={{ height: 10 }} />
+      
+      <button
+        className="tool-button"
+        onClick={createAnimations}
+        title="Create Animations"
+        style={{ backgroundColor: '#00cc99', fontSize: '10px' }}
+      >
+        Create<br/>Anim
+      </button>
+      
+      <button
+        className={`tool-button ${isPlaying ? 'active' : ''}`}
+        onClick={togglePlayAnimation}
+        title="Play/Pause Animation"
+        style={{ backgroundColor: isPlaying ? '#ff6600' : '#009966', fontSize: '11px' }}
+      >
+        {isPlaying ? 'Pause' : 'Play'}
       </button>
       
       <div style={{ height: 20 }} />
