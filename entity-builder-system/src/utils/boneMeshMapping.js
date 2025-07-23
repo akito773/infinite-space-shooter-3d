@@ -1,5 +1,48 @@
 import { v4 as uuidv4 } from 'uuid';
 
+// 人間用ボーンマッピング
+export const HUMAN_BONE_MAPPING = {
+  // 頭部
+  'Head': { bone: 'Head', weight: 1.0 },
+  'Eye_Left': { bone: 'Head', weight: 1.0 },
+  'Eye_Right': { bone: 'Head', weight: 1.0 },
+  'Pupil_Left': { bone: 'Head', weight: 1.0 },
+  'Pupil_Right': { bone: 'Head', weight: 1.0 },
+  'Nose': { bone: 'Head', weight: 1.0 },
+  'Mouth': { bone: 'Head', weight: 1.0 },
+  'Hair_Top': { bone: 'Head', weight: 1.0 },
+  'Hair_Back': { bone: 'Head', weight: 0.8 },
+  'Hair_Ponytail': { bone: 'Head', weight: 0.6 },
+  'Hair_Bob': { bone: 'Head', weight: 1.0 },
+  
+  // 首
+  'Neck': { bone: 'Neck', weight: 1.0 },
+  
+  // 胴体
+  'Torso': { bone: 'Spine', weight: 1.0 },
+  'Hip': { bone: 'Root', weight: 1.0 },
+  
+  // 左腕
+  'UpperArm_Left': { bone: 'UpperArm_L', weight: 1.0 },
+  'LowerArm_Left': { bone: 'LowerArm_L', weight: 1.0 },
+  'Hand_Left': { bone: 'Hand_L', weight: 1.0 },
+  
+  // 右腕
+  'UpperArm_Right': { bone: 'UpperArm_R', weight: 1.0 },
+  'LowerArm_Right': { bone: 'LowerArm_R', weight: 1.0 },
+  'Hand_Right': { bone: 'Hand_R', weight: 1.0 },
+  
+  // 左脚
+  'Thigh_Left': { bone: 'Thigh_L', weight: 1.0 },
+  'Shin_Left': { bone: 'Shin_L', weight: 1.0 },
+  'Foot_Left': { bone: 'Foot_L', weight: 1.0 },
+  
+  // 右脚
+  'Thigh_Right': { bone: 'Thigh_R', weight: 1.0 },
+  'Shin_Right': { bone: 'Shin_R', weight: 1.0 },
+  'Foot_Right': { bone: 'Foot_R', weight: 1.0 },
+};
+
 // ロボットパーツとボーンのマッピング定義
 export const ROBOT_BONE_MAPPING = {
   // 頭部
@@ -69,8 +112,12 @@ export function generateAutoBindings(objects, bones) {
   const bindings = [];
   const boneMap = new Map(bones.map(b => [b.name, b]));
   
+  // ロボットか人間かを判定
+  const isHuman = objects.some(obj => obj.name === 'Head' || obj.name === 'Torso');
+  const mappingTable = isHuman ? HUMAN_BONE_MAPPING : ROBOT_BONE_MAPPING;
+  
   objects.forEach(obj => {
-    const mapping = ROBOT_BONE_MAPPING[obj.name];
+    const mapping = mappingTable[obj.name];
     if (mapping) {
       // プライマリボーン
       const primaryBone = boneMap.get(mapping.bone);

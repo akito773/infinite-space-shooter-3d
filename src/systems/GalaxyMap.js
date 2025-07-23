@@ -681,7 +681,16 @@ export class GalaxyMap {
     
     // 惑星を発見したときに呼ぶ
     discoverLocation(location) {
-        const zone = this.zones.find(z => 
+        // ZoneManagerからzonesを取得
+        const zones = this.game.zoneManager?.zones;
+        if (!zones) {
+            console.warn('GalaxyMap: ZoneManager not initialized yet');
+            return;
+        }
+        
+        // zonesはオブジェクトなので、Object.valuesで配列に変換
+        const zoneArray = Object.values(zones);
+        const zone = zoneArray.find(z => 
             z.japaneseName === location.name || 
             z.name === location.name ||
             z.realName === location.name

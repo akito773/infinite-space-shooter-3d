@@ -4,8 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { addObject, addMultipleObjects, clearScene, setTransformMode } from '../store';
 import { generatePlayerShip } from '../utils/shipGenerator';
 import { generateAdvancedPlayerShip, generateHumanoidRobot } from '../utils/shipGeneratorAdvanced';
+import { generateHuman, BODY_TYPES, HAIR_TYPES } from '../utils/humanGenerator';
 import { exportSceneAsGLTF, createExportScene } from '../utils/exporter';
 import { generateRobotSkeleton } from '../utils/boneSystem';
+import { generateHumanSkeleton } from '../utils/humanGenerator';
 import { generateAutoBindings, normalizeWeights } from '../utils/boneMeshMapping';
 import { generateWalkAnimation, generateIdleAnimation } from '../utils/animationSystem';
 import { 
@@ -72,19 +74,41 @@ function Toolbar() {
       dispatch(addMultipleObjects(robotObjects));
     }
   };
+  
+  const createHuman = () => {
+    const confirmation = window.confirm('This will clear the current scene and create a human character. Continue?');
+    if (confirmation) {
+      dispatch(clearScene());
+      dispatch(clearBones());
+      
+      // 簡単な設定ダイアログ
+      const bodyType = prompt('Body type? (standard/athletic/slim/strong)', 'standard') || 'standard';
+      const hairType = prompt('Hair type? (short/long/ponytail/spiky/bob/none)', 'short') || 'short';
+      
+      const humanObjects = generateHuman({
+        bodyType: BODY_TYPES[bodyType] ? bodyType : 'standard',
+        hairType: HAIR_TYPES[hairType] || 'short',
+      });
+      
+      dispatch(addMultipleObjects(humanObjects));
+    }
+  };
 
   const createRobotBones = () => {
     const hasRobot = objects.some(obj => obj.name === 'Humanoid_Robot');
-    if (!hasRobot) {
-      alert('Please generate a robot first!');
+    const hasHuman = objects.some(obj => obj.name === 'Head' || obj.name === 'Torso');
+    
+    if (!hasRobot && !hasHuman) {
+      alert('Please generate a robot or human first!');
       return;
     }
     
-    const confirmation = window.confirm('This will add a skeleton to the robot. Continue?');
+    const modelType = hasHuman ? 'human' : 'robot';
+    const confirmation = window.confirm(`This will add a skeleton to the ${modelType}. Continue?`);
     if (confirmation) {
       dispatch(clearBones());
       dispatch(clearBindings());
-      const newBones = generateRobotSkeleton();
+      const newBones = hasHuman ? generateHumanSkeleton() : generateRobotSkeleton();
       dispatch(addMultipleBones(newBones));
       dispatch(setEditMode('bone'));
     }
@@ -158,6 +182,8 @@ function Toolbar() {
         filename = 'player_ship_SF-01_advanced.glb';
       } else if (objects.find(obj => obj.name === 'Humanoid_Robot')) {
         filename = 'humanoid_robot_MR-X1.glb';
+      } else if (objects.find(obj => obj.name === 'Torso' || obj.name === 'Head')) {
+        filename = 'human_character.glb';
       }
       
       await exportSceneAsGLTF(exportScene, filename);
@@ -193,6 +219,15 @@ function Toolbar() {
         style={{ backgroundColor: '#ff6600', fontSize: '11px' }}
       >
         Robot
+      </button>
+      
+      <button
+        className="tool-button"
+        onClick={createHuman}
+        title="Generate Human Character"
+        style={{ backgroundColor: '#ff0099', fontSize: '11px' }}
+      >
+        Human
       </button>
       
       <button
