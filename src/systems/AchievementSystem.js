@@ -71,11 +71,15 @@ export class AchievementSystem {
                 icon: '🔭',
                 points: 20,
                 condition: () => {
-                    const discovered = this.game.galaxyMap?.zones.filter(z => z.discovered).length || 0;
+                    const zones = this.game.zoneManager?.zones;
+                    if (!zones) return false;
+                    const discovered = Object.values(zones).filter(z => z.discovered).length;
                     return discovered >= 3;
                 },
                 progress: () => {
-                    const discovered = this.game.galaxyMap?.zones.filter(z => z.discovered).length || 0;
+                    const zones = this.game.zoneManager?.zones;
+                    if (!zones) return 0;
+                    const discovered = Object.values(zones).filter(z => z.discovered).length;
                     return Math.min(discovered / 3, 1);
                 }
             },

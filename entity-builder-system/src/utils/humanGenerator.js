@@ -498,6 +498,7 @@ export function generateHuman(options = {}) {
   });
   
   // 左脚（太もも）
+  const leftHipX = -HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.4;
   const leftThighId = uuidv4();
   parts.push({
     id: leftThighId,
@@ -505,9 +506,18 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'cylinder',
-      args: [0.15, 0.12, 2, 8],
+      args: [
+        HUMAN_PROPORTIONS.thighRadius,
+        HUMAN_PROPORTIONS.thighRadius * 0.8,
+        HUMAN_PROPORTIONS.thighLength,
+        8
+      ],
     },
-    position: [-HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, HUMAN_PROPORTIONS.height - 5.5, 0],
+    position: [
+      leftHipX,
+      hipY - HUMAN_PROPORTIONS.thighLength * 0.5,
+      0
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -520,6 +530,7 @@ export function generateHuman(options = {}) {
   });
   
   // 左脚（すね）
+  const leftKneeY = hipY - HUMAN_PROPORTIONS.thighLength;
   const leftShinId = uuidv4();
   parts.push({
     id: leftShinId,
@@ -527,9 +538,18 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'cylinder',
-      args: [0.12, 0.10, 1.8, 8],
+      args: [
+        HUMAN_PROPORTIONS.shinRadius,
+        HUMAN_PROPORTIONS.shinRadius * 0.7,
+        HUMAN_PROPORTIONS.shinLength,
+        8
+      ],
     },
-    position: [-HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, HUMAN_PROPORTIONS.height - 7.4, 0],
+    position: [
+      leftHipX,
+      leftKneeY - HUMAN_PROPORTIONS.shinLength * 0.5,
+      0
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -549,9 +569,17 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'box',
-      args: [0.25, 0.1, 0.4],
+      args: [
+        HUMAN_PROPORTIONS.footWidth,
+        HUMAN_PROPORTIONS.footHeight,
+        HUMAN_PROPORTIONS.footLength
+      ],
     },
-    position: [-HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, 0.05, 0.1],
+    position: [
+      leftHipX,
+      HUMAN_PROPORTIONS.footHeight * 0.5,
+      HUMAN_PROPORTIONS.footLength * 0.2
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -564,6 +592,7 @@ export function generateHuman(options = {}) {
   });
   
   // 右脚（太もも）
+  const rightHipX = HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.4;
   const rightThighId = uuidv4();
   parts.push({
     id: rightThighId,
@@ -571,9 +600,18 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'cylinder',
-      args: [0.15, 0.12, 2, 8],
+      args: [
+        HUMAN_PROPORTIONS.thighRadius,
+        HUMAN_PROPORTIONS.thighRadius * 0.8,
+        HUMAN_PROPORTIONS.thighLength,
+        8
+      ],
     },
-    position: [HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, HUMAN_PROPORTIONS.height - 5.5, 0],
+    position: [
+      rightHipX,
+      hipY - HUMAN_PROPORTIONS.thighLength * 0.5,
+      0
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -586,6 +624,7 @@ export function generateHuman(options = {}) {
   });
   
   // 右脚（すね）
+  const rightKneeY = hipY - HUMAN_PROPORTIONS.thighLength;
   const rightShinId = uuidv4();
   parts.push({
     id: rightShinId,
@@ -593,9 +632,18 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'cylinder',
-      args: [0.12, 0.10, 1.8, 8],
+      args: [
+        HUMAN_PROPORTIONS.shinRadius,
+        HUMAN_PROPORTIONS.shinRadius * 0.7,
+        HUMAN_PROPORTIONS.shinLength,
+        8
+      ],
     },
-    position: [HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, HUMAN_PROPORTIONS.height - 7.4, 0],
+    position: [
+      rightHipX,
+      rightKneeY - HUMAN_PROPORTIONS.shinLength * 0.5,
+      0
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -615,9 +663,17 @@ export function generateHuman(options = {}) {
     type: 'object',
     geometry: {
       type: 'box',
-      args: [0.25, 0.1, 0.4],
+      args: [
+        HUMAN_PROPORTIONS.footWidth,
+        HUMAN_PROPORTIONS.footHeight,
+        HUMAN_PROPORTIONS.footLength
+      ],
     },
-    position: [HUMAN_PROPORTIONS.hipWidth * bodyConfig.hipMod * 0.3, 0.05, 0.1],
+    position: [
+      rightHipX,
+      HUMAN_PROPORTIONS.footHeight * 0.5,
+      HUMAN_PROPORTIONS.footLength * 0.2
+    ],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     material: {
@@ -631,7 +687,7 @@ export function generateHuman(options = {}) {
   
   // 髪型を追加
   if (hairType !== 'none') {
-    const hairParts = generateHair(hairType, hairColor, headId);
+    const hairParts = generateHair(hairType, hairColor, headY);
     parts.push(...hairParts);
   }
   
@@ -639,7 +695,7 @@ export function generateHuman(options = {}) {
 }
 
 // 髪型生成関数
-function generateHair(type, color, parentId) {
+function generateHair(type, color, headY) {
   const hairParts = [];
   
   switch (type) {
@@ -653,7 +709,7 @@ function generateHair(type, color, parentId) {
           type: 'sphere',
           args: [0.55, 16, 16],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 0.4, 0],
+        position: [0, headY + 0.1, 0],
         rotation: [0, 0, 0],
         scale: [1, 0.8, 1],
         material: {
@@ -676,7 +732,7 @@ function generateHair(type, color, parentId) {
           type: 'sphere',
           args: [0.55, 16, 16],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 0.4, 0],
+        position: [0, headY + 0.1, 0],
         rotation: [0, 0, 0],
         scale: [1, 0.8, 1],
         material: {
@@ -697,7 +753,7 @@ function generateHair(type, color, parentId) {
           type: 'cylinder',
           args: [0.4, 0.2, 1.5, 8],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 1.5, -0.2],
+        position: [0, headY - 0.8, -0.2],
         rotation: [0, 0, 0],
         scale: [1, 1, 0.5],
         material: {
@@ -720,7 +776,7 @@ function generateHair(type, color, parentId) {
           type: 'sphere',
           args: [0.5, 16, 16],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 0.4, 0],
+        position: [0, headY + 0.1, 0],
         rotation: [0, 0, 0],
         scale: [1, 0.7, 1],
         material: {
@@ -741,7 +797,7 @@ function generateHair(type, color, parentId) {
           type: 'cylinder',
           args: [0.15, 0.05, 1.2, 6],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 0.8, -0.4],
+        position: [0, headY - 0.3, -0.4],
         rotation: [Math.PI / 6, 0, 0],
         scale: [1, 1, 1],
         material: {
@@ -768,7 +824,7 @@ function generateHair(type, color, parentId) {
           },
           position: [
             Math.cos(angle) * 0.3,
-            HUMAN_PROPORTIONS.height - 0.2,
+            headY + 0.3,
             Math.sin(angle) * 0.3
           ],
           rotation: [-Math.PI / 6, angle, 0],
@@ -794,7 +850,7 @@ function generateHair(type, color, parentId) {
           type: 'sphere',
           args: [0.6, 16, 16],
         },
-        position: [0, HUMAN_PROPORTIONS.height - 0.5, 0],
+        position: [0, headY, 0],
         rotation: [0, 0, 0],
         scale: [1, 1.2, 1],
         material: {
@@ -820,7 +876,7 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rootId,
     name: 'Root',
-    position: [0, HUMAN_PROPORTIONS.height - 4.25, 0],
+    position: [0, HUMAN_PROPORTIONS.hipHeight, 0],
     rotation: [0, 0, 0],
     length: 0.5,
     parent: null,
@@ -832,9 +888,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: spineId,
     name: 'Spine',
-    position: [0, 0.5, 0],
+    position: [0, 0.2, 0],
     rotation: [0, 0, 0],
-    length: 2.0,
+    length: HUMAN_PROPORTIONS.torsoLength * 0.8,
     parent: rootId,
     children: []
   });
@@ -845,9 +901,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: neckId,
     name: 'Neck',
-    position: [0, 2.0, 0],
+    position: [0, HUMAN_PROPORTIONS.torsoLength * 0.8, 0],
     rotation: [0, 0, 0],
-    length: 0.3,
+    length: HUMAN_PROPORTIONS.neckLength,
     parent: spineId,
     children: []
   });
@@ -858,35 +914,35 @@ export function generateHumanSkeleton() {
   bones.push({
     id: headId,
     name: 'Head',
-    position: [0, 0.3, 0],
+    position: [0, HUMAN_PROPORTIONS.neckLength, 0],
     rotation: [0, 0, 0],
-    length: 0.5,
+    length: HUMAN_PROPORTIONS.headHeight * 0.8,
     parent: neckId,
     children: []
   });
   bones.find(b => b.id === neckId).children.push(headId);
   
-  // 左肩
+  // 左肩（実際の肩の位置へ）
   const leftShoulerId = uuidv4();
   bones.push({
     id: leftShoulerId,
     name: 'Shoulder_L',
-    position: [-0.5, 1.8, 0],
+    position: [-HUMAN_PROPORTIONS.shoulderWidth * 0.3, HUMAN_PROPORTIONS.torsoLength * 0.7, 0],
     rotation: [0, 0, Math.PI / 2],
-    length: 0.5,
+    length: HUMAN_PROPORTIONS.shoulderWidth * 0.2,
     parent: spineId,
     children: []
   });
   bones.find(b => b.id === spineId).children.push(leftShoulerId);
   
-  // 左上腕
+  // 左上腕（肩から下向きに）
   const leftUpperArmId = uuidv4();
   bones.push({
     id: leftUpperArmId,
     name: 'UpperArm_L',
-    position: [-0.5, 0, 0],
-    rotation: [0, 0, 0],
-    length: 1.5,
+    position: [-HUMAN_PROPORTIONS.shoulderWidth * 0.2, 0, 0],
+    rotation: [0, 0, -Math.PI / 2], // 下向きに回転
+    length: HUMAN_PROPORTIONS.upperArmLength,
     parent: leftShoulerId,
     children: []
   });
@@ -897,9 +953,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: leftLowerArmId,
     name: 'LowerArm_L',
-    position: [-1.5, 0, 0],
+    position: [0, -HUMAN_PROPORTIONS.upperArmLength, 0],
     rotation: [0, 0, 0],
-    length: 1.3,
+    length: HUMAN_PROPORTIONS.lowerArmLength,
     parent: leftUpperArmId,
     children: []
   });
@@ -910,9 +966,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: leftHandId,
     name: 'Hand_L',
-    position: [-1.3, 0, 0],
+    position: [0, -HUMAN_PROPORTIONS.lowerArmLength, 0],
     rotation: [0, 0, 0],
-    length: 0.2,
+    length: HUMAN_PROPORTIONS.handLength,
     parent: leftLowerArmId,
     children: []
   });
@@ -923,9 +979,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightShoulerId,
     name: 'Shoulder_R',
-    position: [0.5, 1.8, 0],
+    position: [HUMAN_PROPORTIONS.shoulderWidth * 0.3, HUMAN_PROPORTIONS.torsoLength * 0.7, 0],
     rotation: [0, 0, -Math.PI / 2],
-    length: 0.5,
+    length: HUMAN_PROPORTIONS.shoulderWidth * 0.2,
     parent: spineId,
     children: []
   });
@@ -936,9 +992,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightUpperArmId,
     name: 'UpperArm_R',
-    position: [0.5, 0, 0],
-    rotation: [0, 0, 0],
-    length: 1.5,
+    position: [HUMAN_PROPORTIONS.shoulderWidth * 0.2, 0, 0],
+    rotation: [0, 0, Math.PI / 2], // 下向きに回転
+    length: HUMAN_PROPORTIONS.upperArmLength,
     parent: rightShoulerId,
     children: []
   });
@@ -949,9 +1005,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightLowerArmId,
     name: 'LowerArm_R',
-    position: [1.5, 0, 0],
+    position: [0, -HUMAN_PROPORTIONS.upperArmLength, 0],
     rotation: [0, 0, 0],
-    length: 1.3,
+    length: HUMAN_PROPORTIONS.lowerArmLength,
     parent: rightUpperArmId,
     children: []
   });
@@ -962,9 +1018,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightHandId,
     name: 'Hand_R',
-    position: [1.3, 0, 0],
+    position: [0, -HUMAN_PROPORTIONS.lowerArmLength, 0],
     rotation: [0, 0, 0],
-    length: 0.2,
+    length: HUMAN_PROPORTIONS.handLength,
     parent: rightLowerArmId,
     children: []
   });
@@ -975,9 +1031,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: leftThighId,
     name: 'Thigh_L',
-    position: [-0.3, -0.2, 0],
+    position: [-HUMAN_PROPORTIONS.hipWidth * 0.3, -0.2, 0],
     rotation: [0, 0, 0],
-    length: 2.0,
+    length: HUMAN_PROPORTIONS.thighLength,
     parent: rootId,
     children: []
   });
@@ -988,9 +1044,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: leftShinId,
     name: 'Shin_L',
-    position: [0, -2.0, 0],
+    position: [0, -HUMAN_PROPORTIONS.thighLength, 0],
     rotation: [0, 0, 0],
-    length: 1.8,
+    length: HUMAN_PROPORTIONS.shinLength,
     parent: leftThighId,
     children: []
   });
@@ -1001,9 +1057,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: leftFootId,
     name: 'Foot_L',
-    position: [0, -1.8, 0.1],
+    position: [0, -HUMAN_PROPORTIONS.shinLength, 0.1],
     rotation: [-Math.PI / 2, 0, 0],
-    length: 0.3,
+    length: HUMAN_PROPORTIONS.footLength,
     parent: leftShinId,
     children: []
   });
@@ -1014,9 +1070,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightThighId,
     name: 'Thigh_R',
-    position: [0.3, -0.2, 0],
+    position: [HUMAN_PROPORTIONS.hipWidth * 0.3, -0.2, 0],
     rotation: [0, 0, 0],
-    length: 2.0,
+    length: HUMAN_PROPORTIONS.thighLength,
     parent: rootId,
     children: []
   });
@@ -1027,9 +1083,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightShinId,
     name: 'Shin_R',
-    position: [0, -2.0, 0],
+    position: [0, -HUMAN_PROPORTIONS.thighLength, 0],
     rotation: [0, 0, 0],
-    length: 1.8,
+    length: HUMAN_PROPORTIONS.shinLength,
     parent: rightThighId,
     children: []
   });
@@ -1040,9 +1096,9 @@ export function generateHumanSkeleton() {
   bones.push({
     id: rightFootId,
     name: 'Foot_R',
-    position: [0, -1.8, 0.1],
+    position: [0, -HUMAN_PROPORTIONS.shinLength, 0.1],
     rotation: [-Math.PI / 2, 0, 0],
-    length: 0.3,
+    length: HUMAN_PROPORTIONS.footLength,
     parent: rightShinId,
     children: []
   });

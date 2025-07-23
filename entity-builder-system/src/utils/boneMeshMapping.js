@@ -135,6 +135,18 @@ export function generateAutoBindings(objects, bones) {
     }
   });
   
+  // 人間の場合、髪型パーツも頭ボーンにバインド
+  if (isHuman) {
+    const headBone = boneMap.get('Head');
+    if (headBone) {
+      objects.forEach(obj => {
+        if (obj.name.startsWith('Hair_')) {
+          bindings.push(createBindingInfo(obj.id, headBone.id, 1.0));
+        }
+      });
+    }
+  }
+  
   return bindings;
 }
 
