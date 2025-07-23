@@ -226,6 +226,11 @@ export class VoiceSystem {
         return audioClone;
     }
     
+    // 簡易再生メソッド（キャラクター名とボイスキーを指定）
+    play(voiceKey, character = 'luna') {
+        return this.playVoice(character, voiceKey);
+    }
+    
     playLunaVoice(category, index = null) {
         // カテゴリー内のランダムな音声を再生
         const voiceKeys = [];
