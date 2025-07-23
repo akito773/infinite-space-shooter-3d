@@ -278,6 +278,22 @@ export class PlanetDiscoverySystem {
         // ログ記録
         this.recordDiscovery(planetData);
         
+        // ZoneManagerに動的惑星として登録
+        if (this.game.zoneManager) {
+            // マップ用の位置を計算
+            const angle = Math.random() * Math.PI * 2;
+            const currentZoneData = this.game.zoneManager.zones[planetData.zone];
+            const baseDistance = currentZoneData ? currentZoneData.solarDistance : 1.0;
+            const mapDistance = baseDistance + (Math.random() * 0.2 - 0.1); // 親ゾーンから少しずらす
+            
+            this.game.zoneManager.registerDiscoveredPlanet({
+                ...planetData,
+                mapPosition: angle / 0.8 + 1, // 位置をゾーンpositionと同じ形式に
+                distance: mapDistance,
+                position: planet.mesh.position.toArray()
+            });
+        }
+        
         // WarpSystemとGalaxyMapに通知
         if (planet && this.game.warpSystem) {
             this.game.warpSystem.discoverLocation(planet);

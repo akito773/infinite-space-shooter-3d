@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惑星発見システム デバッグ</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #00ffff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 20px;
+        }
+        
+        .debug-panel {
+            background: rgba(0, 50, 100, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .flow-section {
+            background: rgba(0, 30, 60, 0.5);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        h2 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        
+        .step {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: #00ffff;
+            color: #000;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #0066cc, #00aaff);
+            border: 2px solid #00ffff;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        
+        .debug-output {
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        
+        .status.success {
+            background: #00aa00;
+            color: white;
+        }
+        
+        .status.error {
+            background: #aa0000;
+            color: white;
+        }
+        
+        .status.warning {
+            background: #aa6600;
+            color: white;
+        }
+        
+        .key-point {
+            background: rgba(255, 100, 0, 0.2);
+            border: 1px solid #ff6600;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 惑星発見システム デバッグ＆フロー確認</h1>
+        
+        <div class="debug-panel">
+            <h2>🎮 ゲーム起動テスト</h2>
+            <button onclick="launchGame()">ゲーム起動</button>
+            <button onclick="checkSystems()">システム状態確認</button>
+            <button onclick="testDiscovery()">発見テスト実行</button>
+            <div id="game-status" class="debug-output"></div>
+        </div>
+        
+        <div class="flow-section">
+            <h2>📋 惑星発見の正しいフロー</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>ゲーム開始</strong>
+                <ul>
+                    <li>地球エリアでスタート</li>
+                    <li>PlanetDiscoverySystemが初期化される</li>
+                    <li>ZoneManagerが動的惑星用のMapを初期化</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Xキーでスキャン開始</strong>
+                <ul>
+                    <li>エネルギー100消費</li>
+                    <li>3秒間のスキャンアニメーション</li>
+                    <li>スキャン範囲内の隠し惑星を検索</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>惑星発見時の処理</strong>
+                <div class="code-block">
+// PlanetDiscoverySystem.discoverPlanet()
+1. foundPlanets.add(planetData.id) - 発見済みリストに追加
+2. addPlanetToZone(planetData) - 3Dシーンに惑星追加
+3. zoneManager.registerDiscoveredPlanet() - ZoneManagerに登録
+4. warpSystem.discoverLocation() - ワープシステムに通知
+5. galaxyMap.discoverLocation() - マップに通知
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>マップ表示（Mキー）</strong>
+                <ul>
+                    <li>GalaxyMap.draw()が呼ばれる</li>
+                    <li>zoneManager.getAllPlanetsForMap()で全惑星取得</li>
+                    <li>静的ゾーン＋動的惑星を描画</li>
+                    <li>新発見惑星はピンク色＋金枠で表示</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="key-point">
+            <h3>⚠️ 重要な確認ポイント</h3>
+            <ol>
+                <li><strong>ZoneManager.discoveredPlanets</strong> - Mapに惑星が登録されているか</li>
+                <li><strong>GalaxyMap.getAllPlanetsForMap()</strong> - 動的惑星が含まれているか</li>
+                <li><strong>drawZone()</strong> - isDynamicフラグで正しく描画されているか</li>
+            </ol>
+        </div>
+        
+        <div class="debug-panel">
+            <h2>🔍 デバッグコンソール</h2>
+            <button onclick="checkPlanetRegistry()">惑星レジストリ確認</button>
+            <button onclick="checkMapData()">マップデータ確認</button>
+            <button onclick="forceDiscovery()">強制発見テスト</button>
+            <button onclick="clearDebugLog()">ログクリア</button>
+            <div id="debug-console" class="debug-output"></div>
+        </div>
+        
+        <div class="flow-section">
+            <h2>🐛 既知の問題と解決策</h2>
+            
+            <div class="step">
+                <strong>問題1: 新発見惑星がマップに表示されない</strong>
+                <div class="key-point">
+                    <p><strong>原因候補:</strong></p>
+                    <ul>
+                        <li>ZoneManagerのregisterDiscoveredPlanetが呼ばれていない</li>
+                        <li>GalaxyMapがgetAllPlanetsForMapを使用していない</li>
+                        <li>マップ描画時にisDynamicフラグが認識されていない</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="step">
+                <strong>問題2: スキャンしても惑星が見つからない</strong>
+                <div class="key-point">
+                    <p><strong>確認事項:</strong></p>
+                    <ul>
+                        <li>現在のゾーンに発見可能な惑星が設定されているか</li>
+                        <li>発見確率が適切か（基本10% + スキャンボーナス30%）</li>
+                        <li>既に発見済みではないか</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h2>🎯 ゲーム埋め込み</h2>
+            <iframe id="game-frame" src="http://localhost:3004/infinite-space-shooter-3d/" style="display:none;"></iframe>
+            <button onclick="toggleGameFrame()">ゲーム表示/非表示</button>
+            <p style="color: #ff6600; margin-top: 10px;">
+                ※ ゲームサーバーが http://localhost:3004 で起動している必要があります
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let gameWindow = null;
+        let debugLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            debugLog.push(entry);
+            
+            const console = document.getElementById('debug-console');
+            console.textContent = debugLog.slice(-20).join('\n');
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('game-status');
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success';
+            status.innerHTML = `<div class="status ${className}">${message}</div>`;
+        }
+        
+        function launchGame() {
+            log('ゲーム起動中...', 'info');
+            const frame = document.getElementById('game-frame');
+            frame.style.display = 'block';
+            frame.src = 'http://localhost:3004/infinite-space-shooter-3d/';
+            
+            // ゲームウィンドウへのアクセスを設定
+            frame.onload = () => {
+                gameWindow = frame.contentWindow;
+                log('ゲームウィンドウ接続完了', 'success');
+                updateStatus('ゲーム起動完了', 'success');
+                
+                // デバッグフックを設定
+                setupDebugHooks();
+            };
+        }
+        
+        function setupDebugHooks() {
+            if (!gameWindow || !gameWindow.game) {
+                log('ゲームが初期化されていません', 'error');
+                return;
+            }
+            
+            const game = gameWindow.game;
+            
+            // 惑星発見時のフックを追加
+            if (game.planetDiscoverySystem) {
+                const originalDiscover = game.planetDiscoverySystem.discoverPlanet;
+                game.planetDiscoverySystem.discoverPlanet = function(planetData) {
+                    log(`惑星発見: ${planetData.name} (ID: ${planetData.id})`, 'success');
+                    originalDiscover.call(this, planetData);
+                };
+            }
+            
+            // ZoneManager登録時のフック
+            if (game.zoneManager) {
+                const originalRegister = game.zoneManager.registerDiscoveredPlanet;
+                game.zoneManager.registerDiscoveredPlanet = function(planetData) {
+                    log(`ZoneManager登録: ${planetData.name}`, 'success');
+                    originalRegister.call(this, planetData);
+                };
+            }
+            
+            log('デバッグフック設定完了', 'success');
+        }
+        
+        function checkSystems() {
+            if (!gameWindow || !gameWindow.game) {
+                updateStatus('ゲームが起動していません', 'error');
+                return;
+            }
+            
+            const game = gameWindow.game;
+            const systems = {
+                'PlanetDiscoverySystem': !!game.planetDiscoverySystem,
+                'ZoneManager': !!game.zoneManager,
+                'GalaxyMap': !!game.galaxyMap,
+                'WarpSystem': !!game.warpSystem,
+                'discoveredPlanets Map': !!(game.zoneManager && game.zoneManager.discoveredPlanets)
+            };
+            
+            log('=== システム状態 ===', 'info');
+            for (const [name, status] of Object.entries(systems)) {
+                log(`${name}: ${status ? '✓ OK' : '✗ NG'}`, status ? 'success' : 'error');
+            }
+            
+            if (game.zoneManager && game.zoneManager.discoveredPlanets) {
+                log(`動的惑星数: ${game.zoneManager.discoveredPlanets.size}`, 'info');
+            }
+        }
+        
+        function checkPlanetRegistry() {
+            if (!gameWindow || !gameWindow.game || !gameWindow.game.zoneManager) {
+                log('ZoneManagerが利用できません', 'error');
+                return;
+            }
+            
+            const zm = gameWindow.game.zoneManager;
+            log('=== 惑星レジストリ ===', 'info');
+            log(`静的ゾーン数: ${Object.keys(zm.zones).length}`, 'info');
+            log(`動的惑星数: ${zm.discoveredPlanets.size}`, 'info');
+            
+            if (zm.discoveredPlanets.size > 0) {
+                log('動的惑星リスト:', 'info');
+                for (const [id, planet] of zm.discoveredPlanets) {
+                    log(`- ${planet.name} (Zone: ${planet.zone})`, 'success');
+                }
+            }
+        }
+        
+        function checkMapData() {
+            if (!gameWindow || !gameWindow.game || !gameWindow.game.zoneManager) {
+                log('ゲームシステムが利用できません', 'error');
+                return;
+            }
+            
+            const allPlanets = gameWindow.game.zoneManager.getAllPlanetsForMap();
+            log('=== マップ用惑星データ ===', 'info');
+            log(`総惑星数: ${Object.keys(allPlanets).length}`, 'info');
+            
+            for (const [id, planet] of Object.entries(allPlanets)) {
+                const type = planet.isDynamic ? '動的' : '静的';
+                log(`- ${planet.japaneseName || planet.name} [${type}]`, 'info');
+            }
+        }
+        
+        function testDiscovery() {
+            if (!gameWindow || !gameWindow.game) {
+                log('ゲームが起動していません', 'error');
+                return;
+            }
+            
+            log('=== 発見テスト開始 ===', 'info');
+            
+            // スキャンを実行
+            if (gameWindow.game.planetDiscoverySystem) {
+                log('スキャン実行中...', 'info');
+                gameWindow.game.planetDiscoverySystem.startScan();
+            } else {
+                log('PlanetDiscoverySystemが見つかりません', 'error');
+            }
+        }
+        
+        function forceDiscovery() {
+            if (!gameWindow || !gameWindow.game) {
+                log('ゲームが起動していません', 'error');
+                return;
+            }
+            
+            const testPlanet = {
+                id: 'test_planet_' + Date.now(),
+                name: 'テスト惑星-' + Math.floor(Math.random() * 999),
+                type: 'ice_world',
+                zone: gameWindow.game.zoneManager.currentZone,
+                position: { x: 500, y: 0, z: 500 },
+                radius: 20,
+                color: 0xFF69B4,
+                discoveryCondition: { type: 'scan' },
+                rewards: {
+                    credits: 1000,
+                    items: ['test_item'],
+                    experience: 100
+                },
+                lore: 'デバッグ用のテスト惑星'
+            };
+            
+            log(`強制発見: ${testPlanet.name}`, 'warning');
+            gameWindow.game.planetDiscoverySystem.discoverPlanet(testPlanet);
+            
+            // マップを開いて確認
+            setTimeout(() => {
+                if (gameWindow.game.galaxyMap && !gameWindow.game.galaxyMap.isOpen) {
+                    log('マップを開いて確認...', 'info');
+                    gameWindow.game.galaxyMap.open();
+                }
+            }, 1000);
+        }
+        
+        function clearDebugLog() {
+            debugLog = [];
+            document.getElementById('debug-console').textContent = '';
+            log('ログをクリアしました', 'info');
+        }
+        
+        function toggleGameFrame() {
+            const frame = document.getElementById('game-frame');
+            frame.style.display = frame.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // 初期ログ
+        log('デバッグツール準備完了', 'success');
+        log('「ゲーム起動」ボタンでゲームを開始してください', 'info');
+    </script>
+</body>
+</html>

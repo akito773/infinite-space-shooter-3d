@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惑星発見デバッグ（簡易版）</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #00ffff;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        
+        .info-box {
+            background: rgba(0, 50, 100, 0.3);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .code {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .step {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid #00ff88;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .important {
+            background: rgba(255, 100, 0, 0.2);
+            border: 1px solid #ff6600;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        a {
+            color: #00ffff;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 惑星発見システム デバッグガイド</h1>
+        
+        <div class="info-box">
+            <h2>📋 アクセス方法</h2>
+            <p>1. ターミナルで開発サーバーを起動:</p>
+            <div class="code">npm run dev</div>
+            <p>2. ブラウザで以下のURLにアクセス:</p>
+            <div class="code"><a href="http://localhost:3004/infinite-space-shooter-3d/" target="_blank">http://localhost:3004/infinite-space-shooter-3d/</a></div>
+        </div>
+        
+        <div class="info-box">
+            <h2>🔍 デバッグ手順</h2>
+            
+            <div class="step">
+                <h3>Step 1: ブラウザの開発者ツールを開く</h3>
+                <p>F12キーを押して開発者ツールを開き、Consoleタブを選択</p>
+            </div>
+            
+            <div class="step">
+                <h3>Step 2: ゲームシステムの確認</h3>
+                <p>コンソールで以下のコマンドを実行:</p>
+                <div class="code">// ゲームが初期化されているか確認
+console.log('Game:', window.game);
+
+// 各システムの存在確認
+console.log('PlanetDiscoverySystem:', !!window.game?.planetDiscoverySystem);
+console.log('ZoneManager:', !!window.game?.zoneManager);
+console.log('GalaxyMap:', !!window.game?.galaxyMap);
+
+// 動的惑星の登録状況
+console.log('Discovered Planets:', window.game?.zoneManager?.discoveredPlanets);</div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 3: 惑星発見のテスト</h3>
+                <p>ゲーム内でXキーを押してスキャンを実行、またはコンソールで強制発見:</p>
+                <div class="code">// 強制的に惑星を発見
+const testPlanet = {
+    id: 'test_' + Date.now(),
+    name: 'テスト惑星',
+    type: 'ice_world',
+    zone: window.game.zoneManager.currentZone,
+    position: { x: 500, y: 0, z: 500 },
+    radius: 25,
+    color: 0xFF69B4,
+    discoveryCondition: { type: 'scan' },
+    rewards: {
+        credits: 1000,
+        items: ['test_item'],
+        experience: 100
+    },
+    lore: 'デバッグ用のテスト惑星'
+};
+
+window.game.planetDiscoverySystem.discoverPlanet(testPlanet);
+console.log('惑星を発見しました！');</div>
+            </div>
+            
+            <div class="step">
+                <h3>Step 4: マップで確認</h3>
+                <p>Mキーを押してマップを開き、新発見惑星（ピンク色）が表示されるか確認</p>
+                <div class="code">// マップを強制的に開く
+window.game.galaxyMap.open();
+
+// マップデータを確認
+const allPlanets = window.game.zoneManager.getAllPlanetsForMap();
+console.log('Map Planets:', allPlanets);
+
+// 動的惑星のみ表示
+for (const [id, planet] of Object.entries(allPlanets)) {
+    if (planet.isDynamic) {
+        console.log('Dynamic Planet:', planet.name, planet);
+    }
+}</div>
+            </div>
+        </div>
+        
+        <div class="important">
+            <h2>⚠️ 重要な確認ポイント</h2>
+            <ul>
+                <li><strong>ZoneManager.registerDiscoveredPlanet()</strong> が呼ばれているか</li>
+                <li><strong>GalaxyMap.draw()</strong> が getAllPlanetsForMap() を使用しているか</li>
+                <li><strong>動的惑星</strong>に isDynamic フラグが設定されているか</li>
+                <li><strong>マップ描画時</strong>にピンク色（#FF69B4）で表示されているか</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h2>🐛 トラブルシューティング</h2>
+            
+            <div class="step">
+                <h3>問題: 新発見惑星がマップに表示されない</h3>
+                <p>以下のコマンドで詳細を確認:</p>
+                <div class="code">// 動的惑星が登録されているか
+console.log('Discovered Planets Size:', window.game.zoneManager.discoveredPlanets.size);
+
+// 登録されている動的惑星を全て表示
+window.game.zoneManager.discoveredPlanets.forEach((planet, id) => {
+    console.log(`Planet ${id}:`, planet);
+});
+
+// マップ再描画を強制
+window.game.galaxyMap.draw();
+console.log('マップを再描画しました');</div>
+            </div>
+            
+            <div class="step">
+                <h3>デバッグログの有効化</h3>
+                <div class="code">// 詳細ログを有効化
+window.debugPlanetDiscovery = true;
+
+// 発見時にログを出力するようオーバーライド
+const originalDiscover = window.game.planetDiscoverySystem.discoverPlanet;
+window.game.planetDiscoverySystem.discoverPlanet = function(planetData) {
+    console.log('🌟 Discovering planet:', planetData);
+    const result = originalDiscover.call(this, planetData);
+    console.log('✅ Discovery complete');
+    return result;
+};</div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h2>📊 現在の実装状況</h2>
+            <p>実装済みの機能:</p>
+            <ul>
+                <li>✅ PlanetDiscoverySystem - スキャンで惑星発見</li>
+                <li>✅ ZoneManager.registerDiscoveredPlanet() - 動的惑星の登録</li>
+                <li>✅ ZoneManager.getAllPlanetsForMap() - 静的＋動的惑星の取得</li>
+                <li>✅ GalaxyMap - 動的惑星の描画（ピンク色＋金枠）</li>
+                <li>✅ 発見通知の表示</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

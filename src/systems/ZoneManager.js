@@ -31,6 +31,9 @@ export class ZoneManager {
             memoryUsage: 0
         };
         
+        // 動的に発見された惑星を管理
+        this.discoveredPlanets = new Map(); // key: planetId, value: planetData
+        
         // ゾーン定義
         this.zones = {
             earth: {
@@ -720,6 +723,89 @@ export class ZoneManager {
         if (loadingDiv) {
             loadingDiv.remove();
         }
+    }
+    
+    // 動的に発見された惑星を登録
+    registerDiscoveredPlanet(planetData) {
+        if (!planetData || !planetData.id) {
+            console.warn('Invalid planet data for registration');
+            return;
+        }
+        
+        // 発見された惑星を保存
+        this.discoveredPlanets.set(planetData.id, {
+            ...planetData,
+            discovered: true,
+            isDynamic: true // 動的に追加された惑星のマーク
+        });
+        
+        console.log(`Registered discovered planet: ${planetData.name} in zone ${planetData.zone}`);
+    }
+    
+    // 特定ゾーンの全惑星を取得（静的＋動的）
+    getAllPlanetsInZone(zoneId) {
+        const planets = [];
+        
+        // 静的に定義された惑星
+        const staticZone = this.zones[zoneId];
+        if (staticZone) {
+            planets.push({
+                id: staticZone.id,
+                name: staticZone.japaneseName,
+                realName: staticZone.name,
+                position: {
+                    x: Math.cos((staticZone.position - 1) * 0.8) * staticZone.solarDistance * 500,
+                    y: 0,
+                    z: Math.sin((staticZone.position - 1) * 0.8) * staticZone.solarDistance * 500
+                },
+                planetData: staticZone.planetData,
+                discovered: staticZone.discovered,
+                unlocked: staticZone.unlocked,
+                isStatic: true
+            });
+        }
+        
+        // 動的に発見された惑星
+        for (const [id, planet] of this.discoveredPlanets) {
+            if (planet.zone === zoneId) {
+                planets.push(planet);
+            }
+        }
+        
+        return planets;
+    }
+    
+    // 全ゾーンの惑星を取得（マップ表示用）
+    getAllPlanetsForMap() {
+        const allPlanets = {};
+        
+        // 静的ゾーン
+        Object.keys(this.zones).forEach(zoneId => {
+            allPlanets[zoneId] = this.zones[zoneId];
+        });
+        
+        // 動的惑星を仮想ゾーンとして追加
+        for (const [id, planet] of this.discoveredPlanets) {
+            // 動的惑星を仮想的なゾーンとして扱う
+            allPlanets[planet.id] = {
+                id: planet.id,
+                name: planet.name,
+                japaneseName: planet.name,
+                position: planet.mapPosition || 0, // マップ上の位置
+                solarDistance: planet.distance || 1.0,
+                planetData: {
+                    radius: planet.radius || 20,
+                    color: planet.color || 0x4169E1,
+                    atmosphere: planet.hasAtmosphere || false
+                },
+                discovered: true,
+                unlocked: true,
+                isDynamic: true,
+                parentZone: planet.zone // 親ゾーン
+            };
+        }
+        
+        return allPlanets;
     }
     
     destroy() {

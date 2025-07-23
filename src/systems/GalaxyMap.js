@@ -156,6 +156,10 @@ export class GalaxyMap {
                 <span>惑星</span>
             </div>
             <div style="display: flex; align-items: center; margin: 5px 0;">
+                <div style="width: 20px; height: 20px; background: #FF69B4; border-radius: 50%; border: 2px solid #FFD700; margin-right: 10px; box-sizing: border-box;"></div>
+                <span>新発見惑星</span>
+            </div>
+            <div style="display: flex; align-items: center; margin: 5px 0;">
                 <div style="width: 20px; height: 20px; background: #00ffff; margin-right: 10px;"></div>
                 <span>宇宙ステーション</span>
             </div>
@@ -397,11 +401,11 @@ export class GalaxyMap {
         // グリッド
         this.drawGrid();
         
-        // ゾーン情報を取得
-        const zones = this.game.zoneManager?.zones || {};
+        // 全惑星情報を取得（静的＋動的）
+        const allPlanets = this.game.zoneManager?.getAllPlanetsForMap() || {};
         
-        // 各ゾーンを描画
-        Object.values(zones).forEach(zone => {
+        // 各惑星を描画
+        Object.values(allPlanets).forEach(zone => {
             if (zone.discovered || this.game.debugMode) {
                 this.drawZone(zone);
             }
@@ -465,12 +469,22 @@ export class GalaxyMap {
         const centerX = this.mapCanvas.width / 2;
         const centerY = this.mapCanvas.height / 2;
         
-        // ゾーンの位置計算（太陽系の配置）
-        const angle = (zone.position - 1) * 0.8; // ラジアン
-        const distance = zone.solarDistance * 500; // AU to pixels
+        // ゾーンの位置計算
+        let zoneX, zoneY;
         
-        const zoneX = Math.cos(angle) * distance;
-        const zoneY = Math.sin(angle) * distance;
+        if (zone.isDynamic) {
+            // 動的に発見された惑星の場合
+            const angle = (zone.position - 1) * 0.8;
+            const distance = zone.solarDistance * 500;
+            zoneX = Math.cos(angle) * distance;
+            zoneY = Math.sin(angle) * distance;
+        } else {
+            // 静的ゾーンの場合（太陽系の配置）
+            const angle = (zone.position - 1) * 0.8; // ラジアン
+            const distance = zone.solarDistance * 500; // AU to pixels
+            zoneX = Math.cos(angle) * distance;
+            zoneY = Math.sin(angle) * distance;
+        }
         
         const screenX = centerX + (zoneX - this.cameraX) * this.zoomLevel;
         const screenY = centerY + (zoneY - this.cameraY) * this.zoomLevel;
@@ -515,7 +529,16 @@ export class GalaxyMap {
         ctx.arc(screenX, screenY, displayRadius, 0, Math.PI * 2);
         
         if (zone.discovered) {
-            ctx.fillStyle = zone.unlocked ? '#4169E1' : '#666666';
+            // 動的惑星は特別な色にする
+            if (zone.isDynamic) {
+                ctx.fillStyle = '#FF69B4'; // ピンク色で新発見を強調
+                // 外枠を追加
+                ctx.strokeStyle = '#FFD700'; // ゴールドの枠
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = zone.unlocked ? '#4169E1' : '#666666';
+            }
         } else {
             ctx.fillStyle = '#333333';
         }
@@ -681,7 +704,22 @@ export class GalaxyMap {
     
     // 惑星を発見したときに呼ぶ
     discoverLocation(location) {
-        // ZoneManagerからzonesを取得
+        // 動的惑星の場合は既に登録済みなので、通知だけ表示
+        if (location.discoveredPlanet || location.planetData) {
+            const planetName = location.planetData?.name || location.name;
+            
+            // 発見通知
+            this.showDiscoveryNotification(planetName);
+            
+            // 銀河マップを更新
+            if (this.isOpen) {
+                this.draw();
+            }
+            
+            return true;
+        }
+        
+        // 静的ゾーンの発見処理（従来の処理）
         const zones = this.game.zoneManager?.zones;
         if (!zones) {
             console.warn('GalaxyMap: ZoneManager not initialized yet');

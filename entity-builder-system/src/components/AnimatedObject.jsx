@@ -29,11 +29,18 @@ function AnimatedObject({ object }) {
   }, [bindings, object.id]);
   
   // 初期トランスフォームを保存
-  const initialTransform = useRef({
-    position: [...object.position],
-    rotation: [...object.rotation],
-    scale: [...object.scale],
-  });
+  const initialTransform = useRef(null);
+  
+  // 初期化時に位置を保存
+  useEffect(() => {
+    if (!initialTransform.current) {
+      initialTransform.current = {
+        position: [...object.position],
+        rotation: [...object.rotation],
+        scale: [...object.scale],
+      };
+    }
+  }, [object.id]); // object.idが変わったら再初期化
   
   // ボーンのワールドトランスフォームを計算
   const getBoneWorldMatrix = (boneId) => {
@@ -65,6 +72,12 @@ function AnimatedObject({ object }) {
     return matrix;
   };
   
+  // 人間モデルかどうかを判定
+  const isHumanModel = useMemo(() => {
+    // Headという名前のオブジェクトがあれば人間モデル
+    return objects.some(obj => obj.name === 'Head' || obj.name === 'Torso');
+  }, [objects]);
+  
   // アニメーション更新
   useFrame(() => {
     if (!isPlaying || objectBindings.length === 0 || !meshRef.current) return;
@@ -75,6 +88,9 @@ function AnimatedObject({ object }) {
     let totalWeight = 0;
     
     objectBindings.forEach((binding, index) => {
+      const bone = bones.find(b => b.id === binding.boneId);
+      if (!bone) return;
+      
       const boneMatrix = getBoneWorldMatrix(binding.boneId);
       const bonePosition = new THREE.Vector3();
       const boneQuaternion = new THREE.Quaternion();
@@ -82,16 +98,17 @@ function AnimatedObject({ object }) {
       
       boneMatrix.decompose(bonePosition, boneQuaternion, boneScale);
       
-      // 初期位置からのオフセットを適用
-      const offsetPosition = new THREE.Vector3(...initialTransform.current.position);
-      offsetPosition.sub(bonePosition); // 初期のボーン位置との差分
-      offsetPosition.applyQuaternion(boneQuaternion);
-      
-      const finalBonePosition = bonePosition.clone();
-      finalBonePosition.add(offsetPosition);
-      
-      // ウェイトに基づいて加算
-      finalPosition.add(finalBonePosition.multiplyScalar(binding.weight));
+      // 人間モデルの場合は特別な処理
+      if (isHumanModel) {
+        // メッシュがボーン位置に正確に追従
+        finalPosition.copy(bonePosition);
+      } else {
+        // ロボットモデルの場合（従来の処理）
+        const meshInitialPos = new THREE.Vector3(...initialTransform.current.position);
+        const rotatedOffset = meshInitialPos.clone();
+        rotatedOffset.applyQuaternion(boneQuaternion);
+        finalPosition.add(rotatedOffset.multiplyScalar(binding.weight));
+      }
       
       if (index === 0) {
         finalQuaternion.copy(boneQuaternion);
@@ -104,7 +121,12 @@ function AnimatedObject({ object }) {
     
     // 最終的な変換を適用
     if (totalWeight > 0) {
-      meshRef.current.position.copy(finalPosition.divideScalar(totalWeight));
+      if (isHumanModel) {
+        // 人間モデルはウェイトで平均化しない
+        meshRef.current.position.copy(finalPosition);
+      } else {
+        meshRef.current.position.copy(finalPosition.divideScalar(totalWeight));
+      }
       meshRef.current.quaternion.copy(finalQuaternion);
     }
   });
