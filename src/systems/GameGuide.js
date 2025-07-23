@@ -350,7 +350,7 @@ export class GameGuide {
                         <tr><td><span class="key-binding">M</span></td><td>銀河マップ / ワープ</td></tr>
                         <tr><td><span class="key-binding">E</span></td><td>惑星/ステーションに着陸</td></tr>
                         <tr><td><span class="key-binding">F</span></td><td>ステーション/ワープゲートとインタラクト</td></tr>
-                        <tr><td><span class="key-binding">S</span></td><td>Deep Spaceスキャン</td></tr>
+                        <tr><td><span class="key-binding">X</span></td><td>ディープスペーススキャン（惑星発見）</td></tr>
                     </table>
                     
                     <h4>ルナ（相棒）との交流</h4>
@@ -464,11 +464,16 @@ export class GameGuide {
                 <div class="guide-content">
                     <h3>🌌 探索ガイド</h3>
                     
-                    <h4>Deep Spaceスキャン</h4>
-                    <p><span class="key-binding">S</span>キーでスキャンを実行：</p>
+                    <h4>ディープスペーススキャン</h4>
+                    <p><span class="key-binding">X</span>キーでスキャンを実行：</p>
                     <p>• 消費エネルギー: 100</p>
                     <p>• クールダウン: 5秒</p>
                     <p>• 発見率: 基本10% + スキャンボーナス30%</p>
+                    
+                    <div class="guide-tip">
+                        💡 重要: 新しい惑星を発見するにはスキャンが必須です！<br>
+                        近くにいるだけでは発見されません。
+                    </div>
                     
                     <h4>発見できるもの</h4>
                     <p>• 隠された惑星</p>

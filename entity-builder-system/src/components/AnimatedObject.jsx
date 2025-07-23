@@ -82,24 +82,16 @@ function AnimatedObject({ object }) {
       
       boneMatrix.decompose(bonePosition, boneQuaternion, boneScale);
       
-      // 初期位置からのオフセットを計算（人間モデルの場合は異なる計算）
-      const isHuman = object.name === 'Head' || object.name === 'Torso' || 
-                      object.name.includes('Arm') || object.name.includes('Thigh') || 
-                      object.name.includes('Shin') || object.name.includes('Foot');
+      // 初期位置からのオフセットを適用
+      const offsetPosition = new THREE.Vector3(...initialTransform.current.position);
+      offsetPosition.sub(bonePosition); // 初期のボーン位置との差分
+      offsetPosition.applyQuaternion(boneQuaternion);
       
-      if (isHuman) {
-        // 人間モデルの場合：ボーンの回転のみを適用し、位置は直接使用
-        meshRef.current.position.copy(bonePosition);
-        meshRef.current.quaternion.copy(boneQuaternion);
-      } else {
-        // ロボットモデルの場合：オフセットを適用
-        const offsetPosition = new THREE.Vector3(...initialTransform.current.position);
-        offsetPosition.applyQuaternion(boneQuaternion);
-        bonePosition.add(offsetPosition);
-      }
+      const finalBonePosition = bonePosition.clone();
+      finalBonePosition.add(offsetPosition);
       
       // ウェイトに基づいて加算
-      finalPosition.add(bonePosition.multiplyScalar(binding.weight));
+      finalPosition.add(finalBonePosition.multiplyScalar(binding.weight));
       
       if (index === 0) {
         finalQuaternion.copy(boneQuaternion);
@@ -112,22 +104,8 @@ function AnimatedObject({ object }) {
     
     // 最終的な変換を適用
     if (totalWeight > 0) {
-      const isHuman = object.name === 'Head' || object.name === 'Torso' || 
-                      object.name.includes('Arm') || object.name.includes('Thigh') || 
-                      object.name.includes('Shin') || object.name.includes('Foot') ||
-                      object.name.includes('Hand') || object.name === 'Neck' ||
-                      object.name === 'Hip' || object.name.startsWith('Hair_') ||
-                      object.name.startsWith('Eye') || object.name.startsWith('Pupil') ||
-                      object.name === 'Nose' || object.name === 'Mouth';
-      
-      if (isHuman) {
-        // 人間モデルは直接位置を使用（既に計算済み）
-        meshRef.current.quaternion.copy(finalQuaternion);
-      } else {
-        // ロボットモデルは通常の処理
-        meshRef.current.position.copy(finalPosition.divideScalar(totalWeight));
-        meshRef.current.quaternion.copy(finalQuaternion);
-      }
+      meshRef.current.position.copy(finalPosition.divideScalar(totalWeight));
+      meshRef.current.quaternion.copy(finalQuaternion);
     }
   });
   

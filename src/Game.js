@@ -281,6 +281,10 @@ export class Game {
         // 地球脱出シーケンス初期化
         this.earthEscapeSequence = new EarthEscapeSequence(this);
         
+        // 惑星発見システム初期化（Planetクラスを渡す）
+        this.Planet = Planet;
+        this.planetDiscoverySystem = new PlanetDiscoverySystem(this);
+        
         // 酒場シーン初期化
         this.tavernScene = new TavernScene(this);
         
@@ -663,13 +667,12 @@ export class Game {
         this.planets.forEach(planet => {
             planet.update(delta, this.camera);
             
-            // 惑星の発見チェック
-            if (this.player && planet.mesh.position.distanceTo(this.player.group.position) < 200) {
-                this.warpSystem.discoverLocation(planet);
-                // 銀河マップにも通知
-                if (this.galaxyMap) {
-                    this.galaxyMap.discoverLocation(planet);
-                }
+            // 自動発見を無効化 - スキャンで発見するように変更
+            // 惑星の近くにいることだけをチェック（UI表示用）
+            if (this.player && planet.mesh.position.distanceTo(this.player.group.position) < 500) {
+                planet.isNearby = true;
+            } else {
+                planet.isNearby = false;
             }
         });
         

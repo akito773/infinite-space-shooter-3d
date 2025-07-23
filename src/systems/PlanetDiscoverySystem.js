@@ -153,14 +153,14 @@ export class PlanetDiscoverySystem {
         // クールダウンチェック
         if (now - this.lastScanTime < this.scanCooldown) {
             const remaining = Math.ceil((this.scanCooldown - (now - this.lastScanTime)) / 1000);
-            this.game.showMessage(`スキャンクールダウン中: ${remaining}秒`);
+            this.showMessage(`スキャンクールダウン中: ${remaining}秒`);
             return;
         }
         
         // エネルギーチェック
         const energyCost = 100;
         if (this.game.player.energy < energyCost) {
-            this.game.showMessage('エネルギーが不足しています');
+            this.showMessage('エネルギーが不足しています');
             return;
         }
         
@@ -232,7 +232,7 @@ export class PlanetDiscoverySystem {
                 this.discoverPlanet(planet);
             });
         } else {
-            this.game.showMessage('スキャン完了 - 新たな発見はありませんでした');
+            this.showMessage('スキャン完了 - 新たな発見はありませんでした');
         }
         
         // スキャンエフェクト終了
@@ -267,7 +267,7 @@ export class PlanetDiscoverySystem {
         this.foundPlanets.add(planetData.id);
         
         // ゾーンマネージャーに惑星を追加
-        this.addPlanetToZone(planetData);
+        const planet = this.addPlanetToZone(planetData);
         
         // 発見演出
         this.playDiscoveryEffect(planetData);
@@ -278,12 +278,20 @@ export class PlanetDiscoverySystem {
         // ログ記録
         this.recordDiscovery(planetData);
         
+        // WarpSystemとGalaxyMapに通知
+        if (planet && this.game.warpSystem) {
+            this.game.warpSystem.discoverLocation(planet);
+        }
+        if (planet && this.game.galaxyMap) {
+            this.game.galaxyMap.discoverLocation(planet);
+        }
+        
         console.log(`Planet discovered: ${planetData.name}`);
     }
     
     addPlanetToZone(planetData) {
         // Three.jsの惑星オブジェクトを作成
-        const Planet = this.game.Planet;
+        const Planet = this.game.Planet || window.Planet;
         const planet = new Planet(this.game.scene, 
             new THREE.Vector3(planetData.position.x, planetData.position.y, planetData.position.z), {
             radius: planetData.radius,
@@ -306,6 +314,8 @@ export class PlanetDiscoverySystem {
         const zoneMeshes = this.zoneManager.zoneMeshes.get(planetData.zone) || [];
         zoneMeshes.push(planet.mesh);
         this.zoneManager.zoneMeshes.set(planetData.zone, zoneMeshes);
+        
+        return planet;
     }
     
     generateRandomPlanet(zoneId) {
@@ -593,9 +603,9 @@ export class PlanetDiscoverySystem {
     }
     
     setupEventListeners() {
-        // Sキーでスキャン
+        // Xキーでディープスペーススキャン
         document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.altKey) {
+            if (e.key.toLowerCase() === 'x' && !e.ctrlKey && !e.altKey && !this.game.isPaused) {
                 if (!this.isScanning) {
                     this.startScan();
                 }
@@ -637,5 +647,42 @@ export class PlanetDiscoverySystem {
         });
         
         return stats;
+    }
+    
+    // ヘルパーメソッド
+    showMessage(text) {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ffff;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            z-index: 10000;
+            pointer-events: none;
+            animation: messageSlide 2s ease-out;
+        `;
+        message.textContent = text;
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes messageSlide {
+                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+            style.remove();
+        }, 2000);
     }
 }
