@@ -1,4 +1,6 @@
 import { DialogueSystem } from './DialogueSystem.js';
+import { TavernSystem } from './TavernSystem.js';
+import { CommanderDialogue } from './CommanderDialogue.js';
 
 export class LandingMenu {
     constructor(game) {
@@ -7,6 +9,8 @@ export class LandingMenu {
         this.currentLocation = null;
         this.selectedIndex = 0;
         this.dialogueSystem = new DialogueSystem(game);
+        this.tavernSystem = new TavernSystem(game);
+        this.commanderDialogue = new CommanderDialogue(game);
         
         this.createUI();
         this.setupEventListeners();
@@ -105,6 +109,8 @@ export class LandingMenu {
     }
     
     open(location) {
+        console.log('LandingMenu.open called with:', location);
+        
         this.currentLocation = location;
         this.selectedIndex = 0;
         this.isOpen = true;
@@ -118,6 +124,12 @@ export class LandingMenu {
         
         // オプションを生成
         this.createOptions(location);
+        
+        // メニューコンテナが存在するか確認
+        if (!this.menuContainer) {
+            console.error('Menu container not found!');
+            this.createUI();
+        }
         
         // メニューを表示
         this.menuContainer.style.display = 'block';
@@ -203,12 +215,13 @@ export class LandingMenu {
             spaceStation: [
                 { text: 'ショップを見る', action: 'shop', icon: '🛒' },
                 { text: '酒場で情報収集', action: 'tavern', icon: '🍺' },
+                { text: '総統と会う', action: 'commander', icon: '👤' },
                 { text: '機体を修理', action: 'repair', icon: '🔧' },
                 { text: 'ミッション確認', action: 'missions', icon: '📋', badge: 'NEW' },
                 { text: '出発する', action: 'leave', icon: '🚀' }
             ],
             planet: [
-                { text: '総督と会う', action: 'governor', icon: '👤' },
+                { text: '総統と会う', action: 'commander', icon: '👤' },
                 { text: '街を探索', action: 'explore', icon: '🏃' },
                 { text: '研究所を訪問', action: 'lab', icon: '🔬' },
                 { text: '惑星開発', action: 'develop', icon: '🏗️', badge: '開発中' },
@@ -285,18 +298,8 @@ export class LandingMenu {
                 
             case 'tavern':
                 this.close();
-                // ルナとまだ出会っていない場合は出会いイベント
-                if (this.game.storySystem && !this.game.storySystem.storyFlags.hasMetLuna) {
-                    // ルナとの出会いイベントをトリガー
-                    if (this.game.storyEventTrigger) {
-                        this.game.storyEventTrigger.forceEvent('earth_first_landing');
-                    } else if (this.game.triggerTavernMeeting) {
-                        this.game.triggerTavernMeeting();
-                    }
-                } else {
-                    // すでに出会っている場合は通常の酒場会話
-                    this.dialogueSystem.startDialogue('merchant', 'first', '酒場');
-                }
+                // 新しい酒場システムを使用
+                this.tavernSystem.openTavern();
                 break;
                 
             case 'lab':
@@ -319,9 +322,16 @@ export class LandingMenu {
                 }
                 break;
                 
-            case 'governor':
+            case 'commander':
                 this.close();
-                this.dialogueSystem.startDialogue('governor');
+                // 総統との会話
+                if (!this.commanderDialogue.dialogueFlags.hasReceivedFirstMission) {
+                    this.commanderDialogue.showFirstMissionBriefing();
+                } else if (this.game.storyFlags?.hasCompletedEarthEscape && !this.commanderDialogue.dialogueFlags.hasCompletedEarthEscape) {
+                    this.commanderDialogue.showPostEscapeDialogue();
+                } else {
+                    this.commanderDialogue.showRegularDialogue();
+                }
                 break;
                 
             case 'explore':

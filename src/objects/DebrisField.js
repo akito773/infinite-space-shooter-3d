@@ -89,8 +89,8 @@ export class DebrisField {
             }
         }
         
-        // マテリアル
-        const material = new THREE.MeshPhongMaterial({
+        // マテリアル（MeshStandardMaterialでPBRプロパティをサポート）
+        const material = new THREE.MeshStandardMaterial({
             color: 0x666666,
             emissive: pieceData.size === 'large' ? 0x330000 : 0x000000,
             emissiveIntensity: 0.2,

@@ -625,7 +625,7 @@ export class CompanionInteractions {
             this.companionSystem.showMessage(
                 this.specialEvents.longTime.dialogue,
                 4000,
-                'long_time'
+                'greeting'  // 'long_time'は存在しないので'greeting'を使用
             );
             this.companionSystem.increaseTrust(this.specialEvents.longTime.trustBonus);
         }

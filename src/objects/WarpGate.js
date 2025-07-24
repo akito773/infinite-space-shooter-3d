@@ -56,7 +56,6 @@ export class WarpGate {
         const outerRingMaterial = new THREE.MeshPhongMaterial({
             color: 0x4488ff,
             emissive: 0x2244aa,
-            emissiveIntensity: 0.5,
             specular: 0xffffff,
             shininess: 150
         });
@@ -73,7 +72,6 @@ export class WarpGate {
         const innerRingMaterial = new THREE.MeshPhongMaterial({
             color: 0x00ffff,
             emissive: 0x00aaaa,
-            emissiveIntensity: 0.8,
             specular: 0xffffff,
             shininess: 200
         });
@@ -86,7 +84,6 @@ export class WarpGate {
         const coreMaterial = new THREE.MeshPhongMaterial({
             color: 0xffffff,
             emissive: 0x00ffff,
-            emissiveIntensity: 1,
             transparent: true,
             opacity: 0.8
         });
@@ -349,8 +346,13 @@ export class WarpGate {
     
     updateActivationEffects() {
         // ゲートの明るさを変更
-        this.outerRing.material.emissiveIntensity = 0.5 + this.activationProgress * 0.5;
-        this.innerRing.material.emissiveIntensity = 0.8 + this.activationProgress * 0.2;
+        // Three.jsのバージョンによってはemissiveIntensityがサポートされていない場合がある
+        if ('emissiveIntensity' in this.outerRing.material) {
+            this.outerRing.material.emissiveIntensity = 0.5 + this.activationProgress * 0.5;
+        }
+        if ('emissiveIntensity' in this.innerRing.material) {
+            this.innerRing.material.emissiveIntensity = 0.8 + this.activationProgress * 0.2;
+        }
         
         // ポータルの不透明度
         if (this.portalMaterial) {

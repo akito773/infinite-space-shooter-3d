@@ -231,8 +231,8 @@ export class LandingSystem {
     }
     
     showLandingMenu() {
-        // 地球や補給基地など、特定の場所は従来のメニューを使用
-        const exemptPlanets = ['地球', 'Earth', '補給基地', 'Supply Station'];
+        // 補給基地など、特定の場所は従来のメニューを使用
+        const exemptPlanets = ['補給基地', 'Supply Station'];
         const isExemptPlanet = exemptPlanets.includes(this.currentTarget.name);
         
         // ストーリー目標UIに着陸を通知
@@ -340,8 +340,11 @@ export class LandingSystem {
     }
     
     showStationMenu() {
+        console.log('showStationMenu called', this.currentTarget);
+        
         // 新しいLandingMenuシステムを使用
         if (!this.landingMenu && this.game) {
+            console.log('Creating new LandingMenu');
             this.landingMenu = new LandingMenu(this.game);
         }
         
@@ -353,6 +356,7 @@ export class LandingSystem {
                 object: this.currentTarget.object
             };
             
+            console.log('Opening landing menu with:', locationData);
             this.landingMenu.open(locationData);
             
             // 着陸状態をリセット（メニューが閉じられた時のため）

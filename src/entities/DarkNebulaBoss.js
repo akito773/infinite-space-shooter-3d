@@ -39,7 +39,7 @@ export class DarkNebulaBoss {
     createModel() {
         // メイン船体（黒と紫のカラーリング）
         const hullGeometry = new THREE.BoxGeometry(20, 8, 30);
-        const hullMaterial = new THREE.MeshPhongMaterial({
+        const hullMaterial = new THREE.MeshStandardMaterial({
             color: 0x2a0845,
             emissive: 0x6600cc,
             emissiveIntensity: 0.3,
@@ -52,8 +52,7 @@ export class DarkNebulaBoss {
         const maskGeometry = new THREE.ConeGeometry(15, 20, 4);
         const maskMaterial = new THREE.MeshPhongMaterial({
             color: 0x000000,
-            emissive: 0xff0066,
-            emissiveIntensity: 0.5
+            emissive: 0xff0066
         });
         const mask = new THREE.Mesh(maskGeometry, maskMaterial);
         mask.position.z = -15;
@@ -375,10 +374,15 @@ export class DarkNebulaBoss {
     
     showDamageEffect() {
         this.hullMesh.material.emissive = new THREE.Color(1, 0, 0);
-        this.hullMesh.material.emissiveIntensity = 1;
+        // emissiveIntensityはMeshStandardMaterialでのみサポート
+        if ('emissiveIntensity' in this.hullMesh.material) {
+            this.hullMesh.material.emissiveIntensity = 1;
+        }
         
         setTimeout(() => {
-            this.hullMesh.material.emissiveIntensity = 0.3;
+            if ('emissiveIntensity' in this.hullMesh.material) {
+                this.hullMesh.material.emissiveIntensity = 0.3;
+            }
         }, 100);
     }
     
@@ -407,7 +411,9 @@ export class DarkNebulaBoss {
         // 見た目を変更（より禍々しく）
         this.hullMesh.material.color = new THREE.Color(0x000000);
         this.hullMesh.material.emissive = new THREE.Color(0xff0000);
-        this.hullMesh.material.emissiveIntensity = 0.5;
+        if ('emissiveIntensity' in this.hullMesh.material) {
+            this.hullMesh.material.emissiveIntensity = 0.5;
+        }
         
         console.log('ダークネビュラ: フェーズ3 - 完全支配');
     }
