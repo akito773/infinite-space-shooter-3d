@@ -136,6 +136,10 @@ export class LandingMenu {
         
         // フェードイン効果
         this.menuContainer.style.opacity = '0';
+        
+        console.log('Menu container display:', this.menuContainer.style.display);
+        console.log('Menu container parent:', this.menuContainer.parentNode);
+        
         setTimeout(() => {
             this.menuContainer.style.transition = 'opacity 0.3s';
             this.menuContainer.style.opacity = '1';

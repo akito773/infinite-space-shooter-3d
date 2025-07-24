@@ -231,10 +231,6 @@ export class LandingSystem {
     }
     
     showLandingMenu() {
-        // 補給基地など、特定の場所は従来のメニューを使用
-        const exemptPlanets = ['補給基地', 'Supply Station'];
-        const isExemptPlanet = exemptPlanets.includes(this.currentTarget.name);
-        
         // ストーリー目標UIに着陸を通知
         if (this.game && this.game.storyObjectivesUI) {
             this.game.storyObjectivesUI.onPlanetLanded(this.currentTarget.name);
@@ -245,11 +241,23 @@ export class LandingSystem {
             this.game.landingSystem.hasLanded = true;
         }
         
-        if (this.currentTarget.type === 'planet' && !isExemptPlanet) {
-            // 一般的な惑星は惑星着陸システムを起動
+        // 動的に発見された惑星かチェック
+        const isDynamicallyDiscoveredPlanet = this.currentTarget.object && 
+            this.currentTarget.object.discoveredPlanet === true;
+        
+        // ステーションか、既知の惑星（地球、火星、木星など）は通常メニュー
+        const isStationOrKnownPlanet = this.currentTarget.type === 'station' || 
+            (this.currentTarget.type === 'planet' && !isDynamicallyDiscoveredPlanet);
+        
+        console.log(`Landing on: ${this.currentTarget.name}, type: ${this.currentTarget.type}, isDynamic: ${isDynamicallyDiscoveredPlanet}`);
+        
+        if (this.currentTarget.type === 'planet' && isDynamicallyDiscoveredPlanet) {
+            // 動的に発見された未開拓惑星のみ建設モードを起動
+            console.log('Starting planet landing system (construction mode)');
             this.loadPlanetLandingSystem();
         } else {
-            // 地球、ステーション、補給基地は従来のメニュー
+            // それ以外（ステーション、地球、火星など）は通常のメニュー
+            console.log('Showing standard landing menu');
             this.showStationMenu();
         }
     }
