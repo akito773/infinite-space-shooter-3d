@@ -647,10 +647,9 @@ export class TavernSystem {
     leaveTavern() {
         this.adventureUI.hide();
         
-        // 酒場を出た後の処理
-        if (this.game.shopUI) {
-            // ショップUIに戻る
-            this.game.shopUI.element.style.display = 'block';
+        // 着陸メニューに戻る
+        if (this.game.landingMenu && this.game.landingMenu.currentLocation) {
+            this.game.landingMenu.open(this.game.landingMenu.currentLocation);
         }
     }
     

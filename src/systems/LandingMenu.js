@@ -1,6 +1,7 @@
 import { DialogueSystem } from './DialogueSystem.js';
 import { TavernSystem } from './TavernSystem.js';
 import { CommanderDialogue } from './CommanderDialogue.js';
+import { LaboratorySystem } from './LaboratorySystem.js';
 
 export class LandingMenu {
     constructor(game) {
@@ -11,6 +12,7 @@ export class LandingMenu {
         this.dialogueSystem = new DialogueSystem(game);
         this.tavernSystem = new TavernSystem(game);
         this.commanderDialogue = new CommanderDialogue(game);
+        this.laboratorySystem = new LaboratorySystem(game);
         
         this.createUI();
         this.setupEventListeners();
@@ -308,7 +310,7 @@ export class LandingMenu {
                 
             case 'lab':
                 this.close();
-                this.dialogueSystem.startDialogue('scientist');
+                this.laboratorySystem.openLaboratory();
                 break;
                 
             case 'refugees':

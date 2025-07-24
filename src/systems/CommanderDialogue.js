@@ -490,5 +490,10 @@ export class CommanderDialogue {
                 this.game.storySystem.startEarthEscapeSequence();
             }
         }
+        
+        // 着陸メニューに戻る
+        if (this.game.landingMenu && this.game.landingMenu.currentLocation) {
+            this.game.landingMenu.open(this.game.landingMenu.currentLocation);
+        }
     }
 }
