@@ -462,6 +462,10 @@ export class AdventureUI {
     }
     
     setBackground(backgroundId) {
+        // まずプレースホルダーを設定
+        this.backgroundLayer.style.backgroundImage = `url(${this.placeholderImages.background})`;
+        
+        // 実際の画像を試す
         const imagePath = `${import.meta.env.BASE_URL}assets/adventure/backgrounds/${backgroundId}.jpg`;
         const img = new Image();
         
@@ -470,9 +474,8 @@ export class AdventureUI {
         };
         
         img.onerror = () => {
-            // プレースホルダーを使用
-            this.backgroundLayer.style.backgroundImage = `url(${this.placeholderImages.background})`;
             console.warn(`Background image not found: ${backgroundId}`);
+            // プレースホルダーは既に設定済み
         };
         
         img.src = imagePath;
@@ -510,20 +513,24 @@ export class AdventureUI {
             filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
         `;
         
+        // まずプレースホルダーを設定
+        img.src = this.placeholderImages.character;
+        charDiv.appendChild(img);
+        
+        // 実際の画像を試す
         const imagePath = `${import.meta.env.BASE_URL}assets/adventure/characters/${charData.id}/${charData.sprite}.png`;
+        const testImg = new Image();
         
-        img.onload = () => {
-            charDiv.appendChild(img);
+        testImg.onload = () => {
+            img.src = imagePath;
         };
         
-        img.onerror = () => {
-            // プレースホルダーを使用
-            img.src = this.placeholderImages.character;
-            charDiv.appendChild(img);
+        testImg.onerror = () => {
             console.warn(`Character sprite not found: ${charData.id}/${charData.sprite}`);
+            // プレースホルダーは既に設定済み
         };
         
-        img.src = imagePath;
+        testImg.src = imagePath;
         
         this.characterLayer.appendChild(charDiv);
         this.currentCharacters.set(charData.id, charDiv);

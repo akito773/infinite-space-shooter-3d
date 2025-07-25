@@ -384,6 +384,10 @@ export class AchievementSystem {
         return total;
     }
     
+    getUnlockedCount() {
+        return this.unlockedAchievements.size;
+    }
+    
     updatePointsDisplay() {
         if (this.pointsDisplay) {
             this.pointsDisplay.textContent = `(${this.getTotalPoints()}pts)`;
