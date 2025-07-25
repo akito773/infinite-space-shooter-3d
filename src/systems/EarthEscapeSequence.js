@@ -1,270 +1,471 @@
-// 地球脱出シーケンス
+import { AdventureUI } from './AdventureUI.js';
+
 export class EarthEscapeSequence {
     constructor(game) {
         this.game = game;
-        this.isActive = false;
-        this.phase = 0;
-        this.phaseStartTime = 0;
-        this.hasShownFirstEnemy = false;
+        this.adventureUI = new AdventureUI(game);
+        this.isCompleted = false;
     }
     
     start() {
-        this.isActive = true;
-        this.phase = 0;
-        this.phaseStartTime = Date.now();
+        // ゲームを一時停止
+        this.game.isPaused = true;
         
-        // 最初の敵スポーンを遅らせる
+        // 敵のスポーンを停止
         if (this.game.waveManager) {
-            this.game.waveManager.enabled = false;
+            this.game.waveManager.isActive = false;
         }
         
-        // ボイスシステムを使って緊急メッセージ
-        if (this.game.voiceSystem) {
-            this.game.voiceSystem.play('emergency');
+        // BGMを変更（緊急事態の雰囲気）
+        if (this.game.soundManager) {
+            this.game.soundManager.playBGM('emergency');
         }
         
-        // フェーズ1: 緊急脱出メッセージ
-        this.showEscapeMessage();
+        this.showInitialBriefing();
     }
     
-    showEscapeMessage() {
-        // 画面上部に緊急メッセージ
-        const alertContainer = document.createElement('div');
-        alertContainer.className = 'escape-alert';
-        alertContainer.style.cssText = `
-            position: fixed;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(45deg, rgba(255, 0, 0, 0.9), rgba(200, 0, 0, 0.9));
-            border: 2px solid #ff0000;
-            border-radius: 10px;
-            padding: 20px 40px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            z-index: 1500;
-            animation: alertPulse 1s infinite;
-            text-align: center;
-            max-width: 600px;
-        `;
+    showInitialBriefing() {
+        const backgroundContext = {
+            location: '地球軍司令部',
+            description: '警報が鳴り響く司令部。赤い警告灯が点滅している',
+            lighting: 'red_alert',
+            mood: 'urgent'
+        };
         
-        alertContainer.innerHTML = `
-            <div style="color: #ffaa00; font-size: 28px; margin-bottom: 10px;">
-                ⚠️ 緊急事態発生 ⚠️
-            </div>
-            <div>地球防衛軍本部より緊急通達</div>
-            <div style="font-size: 20px; margin-top: 10px;">
-                ヴォイド艦隊が地球圏に侵入！<br>
-                全パイロットは直ちに脱出せよ！
-            </div>
+        this.adventureUI.show(backgroundContext);
+        
+        const dialogues = [
+            {
+                text: '警報が鳴り響く中、緊急通信が入る。'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: 'パイロット！緊急事態だ！',
+                sprite: 'commander_urgent'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: 'ヴォイドの大群が地球に接近している！',
+                sprite: 'commander_serious'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '防衛ラインは既に突破された...もはや地球は持たない。',
+                sprite: 'commander_sad'
+            },
+            {
+                character: 'player',
+                text: '総統！市民の避難は！？'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '避難船の護衛は別部隊が担当している。',
+                sprite: 'commander_serious'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '君には別の任務がある。我々の希望を託したい。',
+                sprite: 'commander_normal'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.showMissionChoice();
+        });
+    }
+    
+    showMissionChoice() {
+        const dialogues = [
+            {
+                character: 'commander',
+                name: '総統',
+                text: '君には最新鋭の試作機「スターファイター」を託す。',
+                sprite: 'commander_normal'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: 'この機体には、我々の全ての技術が詰まっている。',
+                sprite: 'commander_proud'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '生き延びて、人類の希望となってくれ。',
+                sprite: 'commander_serious'
+            }
+        ];
+        
+        const choices = [
+            {
+                text: '了解しました！必ず生き延びて見せます！',
+                action: () => this.acceptMission()
+            },
+            {
+                text: 'でも、地球を見捨てるなんて...',
+                action: () => this.hesitateAboutLeaving()
+            }
+        ];
+        
+        dialogues.push({
+            character: 'commander',
+            name: '総統',
+            text: '決断の時だ。どうする？',
+            sprite: 'commander_serious',
+            choices: choices
+        });
+        
+        this.adventureUI.showDialogue(dialogues);
+    }
+    
+    acceptMission() {
+        const dialogues = [
+            {
+                character: 'commander',
+                name: '総統',
+                text: 'よく言った。その覚悟があれば大丈夫だ。',
+                sprite: 'commander_proud'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '格納庫で準備を整えろ。時間がない！',
+                sprite: 'commander_urgent'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.showHangarScene();
+        });
+    }
+    
+    hesitateAboutLeaving() {
+        const dialogues = [
+            {
+                character: 'commander',
+                name: '総統',
+                text: '気持ちは分かる...私も同じ思いだ。',
+                sprite: 'commander_sad'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: 'だが、全滅しては元も子もない。',
+                sprite: 'commander_serious'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '君が生き延びることが、地球への最大の貢献だ。',
+                sprite: 'commander_normal'
+            },
+            {
+                character: 'player',
+                text: '...分かりました。必ず戻ってきます。'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.showHangarScene();
+        });
+    }
+    
+    showHangarScene() {
+        const backgroundContext = {
+            location: '格納庫',
+            description: '巨大な格納庫。中央にスターファイターが待機している',
+            lighting: 'industrial',
+            mood: 'preparation'
+        };
+        
+        this.adventureUI.show(backgroundContext);
+        
+        const dialogues = [
+            {
+                text: '格納庫に到着すると、整備士たちが慌ただしく動き回っている。'
+            },
+            {
+                character: 'mechanic',
+                name: '整備主任',
+                text: 'パイロット！機体の準備は完了しています！',
+                sprite: 'mechanic_normal'
+            },
+            {
+                character: 'mechanic',
+                name: '整備主任',
+                text: '武装は最大積載、シールドも強化済みです。',
+                sprite: 'mechanic_proud'
+            },
+            {
+                text: '突然、通信機から声が聞こえる。'
+            },
+            {
+                character: 'luna',
+                name: '???',
+                text: 'あの...聞こえますか？',
+                sprite: 'luna_comm'
+            },
+            {
+                character: 'luna',
+                name: '???',
+                text: '私、ルナといいます。ギルドのオペレーターです。',
+                sprite: 'luna_nervous'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'これから、あなたのナビゲーションを担当させていただきます。',
+                sprite: 'luna_normal'
+            }
+        ];
+        
+        const choices = [
+            {
+                text: 'よろしく、ルナ。頼りにしてるよ。',
+                action: () => this.greetLunaWarmly()
+            },
+            {
+                text: 'ギルド？軍の通信士じゃないのか？',
+                action: () => this.askAboutGuild()
+            }
+        ];
+        
+        dialogues.push({
+            character: 'luna',
+            name: 'ルナ',
+            text: 'えっと...初めてなので緊張してますが、よろしくお願いします！',
+            sprite: 'luna_shy',
+            choices: choices
+        });
+        
+        this.adventureUI.showDialogue(dialogues);
+    }
+    
+    greetLunaWarmly() {
+        const dialogues = [
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'あ、ありがとうございます！頑張ります！',
+                sprite: 'luna_happy'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: '発進シークエンスを開始します。',
+                sprite: 'luna_normal'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.showLaunchSequence();
+        });
+    }
+    
+    askAboutGuild() {
+        const dialogues = [
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'はい、民間協力という形で...軍の通信システムは既に...',
+                sprite: 'luna_sad'
+            },
+            {
+                character: 'mechanic',
+                name: '整備主任',
+                text: '詳しい話は後だ！時間がない！',
+                sprite: 'mechanic_urgent'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'そ、そうですね！発進準備を始めます！',
+                sprite: 'luna_surprised'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.showLaunchSequence();
+        });
+    }
+    
+    showLaunchSequence() {
+        const dialogues = [
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'カタパルト接続完了。エンジン出力上昇中...',
+                sprite: 'luna_focused'
+            },
+            {
+                text: '機体が振動し始める。エンジンの轟音が格納庫に響き渡る。'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: 'すべてのシステム、グリーン！',
+                sprite: 'luna_normal'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: '発進まで、10秒...',
+                sprite: 'luna_serious'
+            },
+            {
+                text: '外では爆発音が聞こえ、格納庫が揺れる。'
+            },
+            {
+                character: 'commander',
+                name: '総統',
+                text: '（通信）もう時間がない！今すぐ発進しろ！',
+                sprite: 'commander_urgent'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: '緊急発進シークエンス起動！3...2...1...',
+                sprite: 'luna_urgent'
+            },
+            {
+                character: 'luna',
+                name: 'ルナ',
+                text: '発進！！',
+                sprite: 'luna_shout'
+            }
+        ];
+        
+        this.adventureUI.showDialogue(dialogues, () => {
+            this.completeEscapeSequence();
+        });
+    }
+    
+    completeEscapeSequence() {
+        // アドベンチャーUIを非表示
+        this.adventureUI.hide();
+        
+        // フラグを立てる
+        this.isCompleted = true;
+        if (this.game.storyFlags) {
+            this.game.storyFlags.hasCompletedEarthEscape = true;
+            this.game.storyFlags.hasMetLuna = true;
+        }
+        
+        // ルナをアクティブ化
+        if (this.game.companionSystem) {
+            this.game.companionSystem.activate();
+        }
+        
+        // 発進エフェクト
+        this.showLaunchEffect(() => {
+            // ゲーム再開
+            this.game.isPaused = false;
+            
+            // 敵のスポーンを遅延開始（プレイヤーに準備時間を与える）
+            setTimeout(() => {
+                if (this.game.waveManager) {
+                    this.game.waveManager.isActive = true;
+                    this.game.waveManager.startWave(1); // 最初は簡単なウェーブから
+                }
+            }, 5000); // 5秒後に敵が出現開始
+            
+            // ルナの最初のメッセージ
+            if (this.game.companionSystem) {
+                setTimeout(() => {
+                    this.game.companionSystem.showMessage(
+                        '発進成功！これから私がナビゲートします！',
+                        4000,
+                        'support'
+                    );
+                }, 1000);
+                
+                setTimeout(() => {
+                    this.game.companionSystem.showMessage(
+                        'レーダーに敵影！戦闘準備を！',
+                        3000,
+                        'warning'
+                    );
+                }, 4000);
+            }
+            
+            // BGMを戦闘用に変更
+            if (this.game.soundManager) {
+                this.game.soundManager.playBGM('battle');
+            }
+        });
+    }
+    
+    showLaunchEffect(callback) {
+        // 発進エフェクト用のオーバーレイ
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
         `;
+        document.body.appendChild(overlay);
+        
+        // スピードライン
+        const speedLines = document.createElement('div');
+        speedLines.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 255, 255, 0.3) 100%);
+            z-index: 9999;
+            opacity: 0;
+            animation: speedLineEffect 2s ease-out;
+        `;
+        document.body.appendChild(speedLines);
         
         // アニメーションスタイル
         const style = document.createElement('style');
         style.textContent = `
-            @keyframes alertPulse {
-                0% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
-                50% { box-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
-                100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
-            }
-            
-            @keyframes shakeCamera {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
+            @keyframes speedLineEffect {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.5);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.5);
+                }
+                100% {
+                    opacity: 0;
+                    transform: scale(2);
+                }
             }
         `;
         document.head.appendChild(style);
-        document.body.appendChild(alertContainer);
         
-        // 5秒後にストーリーダイアログを開始
+        // フラッシュエフェクト
         setTimeout(() => {
-            alertContainer.style.opacity = '0';
-            alertContainer.style.transition = 'opacity 1s';
-            setTimeout(() => alertContainer.remove(), 1000);
-            
-            this.startStoryDialogue();
-        }, 5000);
-    }
-    
-    startStoryDialogue() {
-        // ストーリーダイアログで状況説明
-        if (this.game.storyDialogueSystem) {
-            const dialogue = {
-                character: 'ナレーター',
-                lines: [
-                    "西暦2157年、人類は宇宙へと進出し、数多くの惑星に植民地を築いていた。",
-                    "しかし、深宇宙から現れた謎の侵略者「ヴォイド」により、平和は打ち砕かれた。",
-                    "あなたは地球防衛軍の新人パイロット。今、地球が襲撃を受けている！",
-                    "司令部からの通信：「緊急発進！敵の第一波が接近中だ！」"
-                ]
-            };
-            
-            this.game.storyDialogueSystem.startDialogue(dialogue, () => {
-                this.showFirstEnemyWarning();
-            });
-        } else {
-            // フォールバック
-            this.showFirstEnemyWarning();
-        }
-    }
-    
-    showFirstEnemyWarning() {
-        // 敵接近警告
-        const warningContainer = document.createElement('div');
-        warningContainer.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            border: 3px solid #ff0000;
-            border-radius: 20px;
-            padding: 40px;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            z-index: 2000;
-            text-align: center;
-            animation: warningFlash 0.5s infinite;
-        `;
+            overlay.style.opacity = '1';
+        }, 10);
         
-        warningContainer.innerHTML = `
-            <div style="color: #ff0000; font-size: 48px; margin-bottom: 20px;">
-                ⚠️ WARNING ⚠️
-            </div>
-            <div>敵機接近！</div>
-            <div style="font-size: 24px; margin-top: 10px; color: #ffaa00;">
-                戦闘準備！
-            </div>
-        `;
-        
-        const warningStyle = document.createElement('style');
-        warningStyle.textContent = `
-            @keyframes warningFlash {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.7; }
-            }
-        `;
-        document.head.appendChild(warningStyle);
-        document.body.appendChild(warningContainer);
-        
-        // 警告音
-        if (this.game.soundManager) {
-            this.game.soundManager.play('alarm');
-        }
-        
-        // 3秒後に最初の敵を出現させる
         setTimeout(() => {
-            warningContainer.style.opacity = '0';
-            warningContainer.style.transition = 'opacity 0.5s';
-            setTimeout(() => {
-                warningContainer.remove();
-                warningStyle.remove();
-            }, 500);
-            
-            this.spawnFirstEnemies();
-        }, 3000);
-    }
-    
-    spawnFirstEnemies() {
-        // チュートリアル的な最初の敵
-        this.hasShownFirstEnemy = true;
+            overlay.style.opacity = '0';
+        }, 300);
         
-        // ルナからの通信
-        if (this.game.companionSystem && this.game.companionSystem.isActive) {
-            this.game.companionSystem.speak("敵機確認！気をつけて！");
-        }
-        
-        // 少数の敵をスポーン（チュートリアル用）
-        if (this.game.waveManager) {
-            // 最初は敵を少なくする
-            this.game.waveManager.enemiesPerWave = 2;
-            this.game.waveManager.enabled = true;
-            this.game.waveManager.startNextWave();
-            
-            // 通常のウェーブシステムに戻す
-            setTimeout(() => {
-                this.game.waveManager.enemiesPerWave = 3;
-                this.isActive = false;
-            }, 10000);
-        }
-        
-        // 戦闘のヒントを表示
-        this.showCombatHint();
-    }
-    
-    showCombatHint() {
-        const hintContainer = document.createElement('div');
-        hintContainer.style.cssText = `
-            position: fixed;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 50, 100, 0.9);
-            border: 2px solid #00aaff;
-            border-radius: 10px;
-            padding: 20px 30px;
-            color: white;
-            font-size: 18px;
-            z-index: 1000;
-            animation: fadeIn 1s;
-            max-width: 500px;
-            text-align: center;
-        `;
-        
-        hintContainer.innerHTML = `
-            <div style="color: #00ffff; font-weight: bold; margin-bottom: 10px;">
-                💡 戦闘のヒント
-            </div>
-            <div>
-                マウスで照準を合わせて、左クリックまたはスペースキーで射撃！<br>
-                WASDキーで移動、Shiftでブースト！
-            </div>
-        `;
-        
-        const hintStyle = document.createElement('style');
-        hintStyle.textContent = `
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translate(-50%, 20px); }
-                to { opacity: 1; transform: translate(-50%, 0); }
-            }
-        `;
-        document.head.appendChild(hintStyle);
-        document.body.appendChild(hintContainer);
-        
-        // 10秒後に自動的に消す
+        // クリーンアップとコールバック
         setTimeout(() => {
-            hintContainer.style.opacity = '0';
-            hintContainer.style.transition = 'opacity 1s';
-            setTimeout(() => {
-                hintContainer.remove();
-                hintStyle.remove();
-            }, 1000);
-        }, 10000);
-    }
-    
-    // 地球の背景に爆発エフェクトを追加
-    addEarthExplosions() {
-        // 地球の近くにランダムな爆発エフェクトを追加
-        const explosionInterval = setInterval(() => {
-            if (!this.isActive) {
-                clearInterval(explosionInterval);
-                return;
-            }
-            
-            // ランダムな位置に爆発エフェクトを生成
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 150 + Math.random() * 50;
-            const x = Math.cos(angle) * distance;
-            const z = Math.sin(angle) * distance;
-            const y = (Math.random() - 0.5) * 100;
-            
-            // 爆発エフェクト（パーティクルシステムを使用）
-            if (this.game.explosionEffect) {
-                this.game.explosionEffect.explode({ x, y, z });
-            }
+            document.body.removeChild(overlay);
+            document.body.removeChild(speedLines);
+            document.head.removeChild(style);
+            if (callback) callback();
         }, 2000);
     }
 }

@@ -22,7 +22,10 @@
       "Bash(cp:*)",
       "Bash(npm run preview:*)",
       "Bash(ls:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(rm:*)",
+      "Bash(git rm:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

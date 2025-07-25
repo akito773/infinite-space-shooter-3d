@@ -7,15 +7,49 @@ export class WaveManager {
         this.waveStartTime = 0;
         this.waveComplete = false;
         this.bossWaveInterval = 5; // 5ウェーブごとにボス
-        this.enabled = true; // ウェーブシステムの有効/無効
+        this._enabled = true; // ウェーブシステムの有効/無効
         
         this.waveConfigs = [
-            { normalEnemies: 3, fastEnemies: 0, strongEnemies: 0 },
-            { normalEnemies: 4, fastEnemies: 1, strongEnemies: 0 },
-            { normalEnemies: 3, fastEnemies: 2, strongEnemies: 0 },
+            { normalEnemies: 1, fastEnemies: 0, strongEnemies: 0 }, // 最初はチュートリアル的に1体
+            { normalEnemies: 2, fastEnemies: 0, strongEnemies: 0 }, // 徐々に増やす
+            { normalEnemies: 2, fastEnemies: 1, strongEnemies: 0 },
+            { normalEnemies: 3, fastEnemies: 1, strongEnemies: 0 },
             { normalEnemies: 3, fastEnemies: 2, strongEnemies: 1 },
-            { normalEnemies: 2, fastEnemies: 2, strongEnemies: 2 },
         ];
+    }
+    
+    // isActiveとenabledプロパティを同期
+    get isActive() {
+        return this._enabled;
+    }
+    
+    set isActive(value) {
+        this._enabled = value;
+    }
+    
+    get enabled() {
+        return this._enabled;
+    }
+    
+    set enabled(value) {
+        this._enabled = value;
+    }
+    
+    startWave(waveNumber) {
+        this.currentWave = waveNumber;
+        this.enemiesKilledInWave = 0;
+        this.waveComplete = false;
+        this.waveStartTime = Date.now();
+        
+        // ウェーブメッセージを表示
+        this.showWaveMessage(`Wave ${this.currentWave}`);
+        
+        // ボスウェーブかチェック
+        if (this.currentWave % this.bossWaveInterval === 0) {
+            this.spawnBossWave();
+        } else {
+            this.spawnNormalWave();
+        }
     }
     
     startNextWave() {
