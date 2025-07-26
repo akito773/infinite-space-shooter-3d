@@ -32,14 +32,12 @@ export class LaboratorySystem {
     }
     
     openLaboratory() {
-        const backgroundContext = {
-            location: '研究所',
-            description: 'ハイテク機器が並ぶ研究室。様々な実験装置が青白い光を放っている',
-            lighting: 'blue_tech',
-            mood: 'scientific'
+        const scene = {
+            background: 'bg_laboratory',
+            characters: []
         };
         
-        this.adventureUI.show(backgroundContext);
+        this.adventureUI.show(scene);
         
         if (!this.researchFlags.hasMetScientist) {
             this.showFirstMeeting();

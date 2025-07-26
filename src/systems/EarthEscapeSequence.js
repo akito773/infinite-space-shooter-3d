@@ -25,14 +25,12 @@ export class EarthEscapeSequence {
     }
     
     showInitialBriefing() {
-        const backgroundContext = {
-            location: '地球軍司令部',
-            description: '警報が鳴り響く司令部。赤い警告灯が点滅している',
-            lighting: 'red_alert',
-            mood: 'urgent'
+        const scene = {
+            background: 'bg_commander_office',
+            characters: []
         };
         
-        this.adventureUI.show(backgroundContext);
+        this.adventureUI.show(scene);
         
         const dialogues = [
             {
@@ -176,14 +174,12 @@ export class EarthEscapeSequence {
     }
     
     showHangarScene() {
-        const backgroundContext = {
-            location: '格納庫',
-            description: '巨大な格納庫。中央にスターファイターが待機している',
-            lighting: 'industrial',
-            mood: 'preparation'
+        const scene = {
+            background: 'bg_hangar',
+            characters: []
         };
         
-        this.adventureUI.show(backgroundContext);
+        this.adventureUI.show(scene);
         
         const dialogues = [
             {
