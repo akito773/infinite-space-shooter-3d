@@ -291,6 +291,41 @@ export class EarthEscapeSequence {
     }
     
     showLaunchSequence() {
+        // アドベンチャーUIを非表示
+        this.adventureUI.hide();
+        
+        // メッセージ表示
+        this.game.showMessage('発射シーケンス開始', 3000);
+        
+        // ルナのボイス
+        if (this.game.companionSystem) {
+            this.game.companionSystem.playVoice('launch_preparation');
+        }
+        
+        // 3D発射シーケンスを開始
+        setTimeout(() => {
+            this.launchSequence3D.start(() => {
+                this.onLaunchComplete();
+            });
+        }, 2000);
+    }
+    
+    onLaunchComplete() {
+        // 宇宙到達メッセージ
+        this.game.showMessage('地球軌道を離脱しました', 3000);
+        
+        // ルナのボイス
+        if (this.game.companionSystem) {
+            this.game.companionSystem.playVoice('mission_start');
+        }
+        
+        // エスケープシーケンス完了
+        setTimeout(() => {
+            this.completeEscapeSequence();
+        }, 2000);
+    }
+    
+    showLaunchSequence_old() {
         const dialogues = [
             {
                 character: 'luna',

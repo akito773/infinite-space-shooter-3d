@@ -66,6 +66,77 @@ export class SoundManager {
         this.engineGain = null;
     }
     
+    createLaunchSounds() {
+        // 発射シーケンス開始
+        this.sounds.launch_sequence = () => {
+            // アラーム音
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    this.playTone(1000, 0.1, 'square', 0.3);
+                    setTimeout(() => this.playTone(800, 0.1, 'square', 0.3), 100);
+                }, i * 500);
+            }
+        };
+        
+        // ロケット発射
+        this.sounds.rocket_launch = () => {
+            // 低周波ループ
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            const filter = this.audioContext.createBiquadFilter();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(30, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 5);
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(200, this.audioContext.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(2000, this.audioContext.currentTime + 5);
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.8, this.audioContext.currentTime + 2);
+            gainNode.gain.exponentialRampToValueAtTime(0.1, this.audioContext.currentTime + 5);
+            
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 5);
+            
+            // ロール音を追加
+            this.playNoise(5, 0.5);
+        };
+        
+        // 宇宙到達
+        this.sounds.space_transition = () => {
+            // 高周波スイープ
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 1);
+            
+            gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 1);
+            
+            // キラキラ音
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const freq = 1000 + Math.random() * 2000;
+                    this.playTone(freq, 0.05, 'sine', 0.1);
+                }, i * 100);
+            }
+        };
+    }
+    
     createWeaponSounds() {
         // パルスレーザー
         this.sounds.pulse_laser = () => {
@@ -199,6 +270,9 @@ export class SoundManager {
             this.playTone(800, 0.05, 'square', 0.2);
             this.playTone(1000, 0.05, 'square', 0.2);
         };
+        
+        // 発射シーケンス用サウンド
+        this.createLaunchSounds();
     }
     
     playTone(frequency, duration, type = 'sine', volume = 0.5) {

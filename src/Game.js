@@ -1000,6 +1000,11 @@ export class Game {
             this.companionInteractions.update(delta);
         }
         
+        // 3D発射シーケンス更新
+        if (this.earthEscapeSequence && this.earthEscapeSequence.launchSequence3D) {
+            this.earthEscapeSequence.launchSequence3D.update(delta);
+        }
+        
         // 実績システム更新
         if (this.achievementSystem) {
             this.achievementSystem.update(delta);
