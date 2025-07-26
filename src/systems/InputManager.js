@@ -92,6 +92,13 @@ export class InputManager {
                 window.game.triggerTavernMeeting();
                 console.log('Tavern meeting triggered!');
             }
+            
+            // デバッグ：地球脱出シーケンス再生（Ctrl+E）
+            if (e.key.toLowerCase() === 'e' && e.ctrlKey && window.game && window.game.earthEscapeSequence) {
+                localStorage.removeItem('hasSeenEscapeSequence');
+                window.game.earthEscapeSequence.start();
+                console.log('Earth escape sequence restarted!');
+            }
         });
 
         document.addEventListener('keyup', (e) => {
