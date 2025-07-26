@@ -164,8 +164,33 @@ export const WeaponRarity = {
 
 // 武器の強化タイプ
 export const WeaponUpgrades = {
-    DAMAGE: { name: 'ダメージ強化', maxLevel: 10, costPerLevel: 1000 },
-    FIRE_RATE: { name: '連射速度強化', maxLevel: 10, costPerLevel: 800 },
-    ACCURACY: { name: '精度強化', maxLevel: 5, costPerLevel: 1200 },
-    SPECIAL: { name: '特殊効果強化', maxLevel: 3, costPerLevel: 2000 }
+    DAMAGE: { name: 'ダメージ強化', maxLevel: 10, costPerLevel: 1000, bonusPerLevel: 0.1 },
+    FIRE_RATE: { name: '連射速度強化', maxLevel: 10, costPerLevel: 800, bonusPerLevel: 0.08 },
+    ACCURACY: { name: '精度強化', maxLevel: 5, costPerLevel: 1200, bonusPerLevel: 0.15 },
+    SPECIAL: { name: '特殊効果強化', maxLevel: 3, costPerLevel: 2000, bonusPerLevel: 0.25 }
+};
+
+// 武器バランス設定
+export const WeaponBalance = {
+    // DPSバランス: ダメージ * (1000 / fireRate)
+    // パルスレーザー: 25 * (1000/150) = 166.7 DPS
+    // ラピッドファイア: 12 * 3 * (1000/80) = 450 DPS (バースト)
+    // プラズマキャノン: 60 * (1000/500) = 120 DPS + AOE
+    // スキャッター: 18 * 5 * (1000/250) = 360 DPS (全弾命中時)
+    
+    ENERGY_CONSUMPTION: {
+        pulse_laser: 5,
+        rapid_fire: 3,
+        plasma_cannon: 15,
+        scatter_shot: 8,
+        ion_beam: 50,
+        laser_array: 10
+    },
+    
+    UPGRADE_SCALING: {
+        damage: (base, level) => base * (1 + level * 0.1),
+        fireRate: (base, level) => base * (1 - level * 0.08), // クールダウン減少
+        accuracy: (spread, level) => spread * (1 - level * 0.15), // 拡散減少
+        special: (value, level) => value * (1 + level * 0.25)
+    }
 };

@@ -58,9 +58,147 @@ export class SoundManager {
             }
         };
         
+        // 武器音エフェクト
+        this.createWeaponSounds();
+        
         // エンジン音（ループ）
         this.engineOscillator = null;
         this.engineGain = null;
+    }
+    
+    createWeaponSounds() {
+        // パルスレーザー
+        this.sounds.pulse_laser = () => {
+            this.playTone(1200, 0.05, 'sawtooth', 0.3);
+            this.playTone(800, 0.1, 'square', 0.2);
+        };
+        
+        // ラピッドファイア
+        this.sounds.rapid_shot = () => {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    this.playTone(1000 - i * 100, 0.03, 'sawtooth', 0.2);
+                }, i * 30);
+            }
+        };
+        
+        // プラズマキャノン
+        this.sounds.plasma_shot = () => {
+            // チャージ音
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    this.playTone(200 + i * 50, 0.02, 'sine', 0.1);
+                }, i * 10);
+            }
+            // 発射音
+            setTimeout(() => {
+                this.playTone(150, 0.3, 'sawtooth', 0.5);
+                this.playNoise(0.1, 0.3);
+            }, 100);
+        };
+        
+        // ホーミングミサイル
+        this.sounds.missile_launch = () => {
+            this.playTone(100, 0.5, 'sawtooth', 0.4);
+            this.playNoise(0.3, 0.2);
+            // ロケットエンジン音
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    this.playTone(50 + Math.random() * 50, 0.05, 'sawtooth', 0.1);
+                }, i * 25);
+            }
+        };
+        
+        // スキャッターショット
+        this.sounds.scatter_shot = () => {
+            this.playTone(600, 0.1, 'square', 0.3);
+            this.playNoise(0.05, 0.4);
+        };
+        
+        // イオンビームチャージ
+        this.sounds.ion_charge = () => {
+            // チャージアップ
+            const startFreq = 100;
+            const endFreq = 2000;
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(startFreq, this.audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(endFreq, this.audioContext.currentTime + 2);
+            
+            gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, this.audioContext.currentTime + 2);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + 2);
+        };
+        
+        // シールド起動
+        this.sounds.shield_activate = () => {
+            this.playTone(440, 0.1, 'sine', 0.3);
+            this.playTone(880, 0.2, 'sine', 0.2);
+            // シールドハム音
+            setTimeout(() => {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(60, this.audioContext.currentTime);
+                
+                gainNode.gain.setValueAtTime(0.05, this.audioContext.currentTime);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + 5);
+            }, 200);
+        };
+        
+        // EMP爆発
+        this.sounds.emp_blast = () => {
+            // 電磁パルス
+            this.playNoise(0.5, 0.6);
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    this.playTone(2000 - i * 300, 0.1, 'square', 0.3);
+                }, i * 100);
+            }
+        };
+        
+        // 量子魚雷
+        this.sounds.quantum_launch = () => {
+            // 低周波ハム
+            this.playTone(30, 1, 'sine', 0.5);
+            // 量子エフェクト
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const freq = Math.random() * 1000 + 500;
+                    this.playTone(freq, 0.05, 'sine', 0.1);
+                }, i * 50);
+            }
+        };
+        
+        // レーザーアレイ
+        this.sounds.laser_array = () => {
+            // 連続レーザー音
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    this.playTone(1500 + i * 100, 0.05, 'sawtooth', 0.2);
+                }, i * 20);
+            }
+        };
+        
+        // 武器切り替え
+        this.sounds.weapon_switch = () => {
+            this.playTone(600, 0.05, 'square', 0.2);
+            this.playTone(800, 0.05, 'square', 0.2);
+            this.playTone(1000, 0.05, 'square', 0.2);
+        };
     }
     
     playTone(frequency, duration, type = 'sine', volume = 0.5) {

@@ -9,12 +9,53 @@ export class ProjectileManager {
     addProjectile(projectile, type) {
         if (!projectile) return;
         
+        // 複数のプロジェクタイルを処理（スキャッターショットなど）
+        if (Array.isArray(projectile)) {
+            projectile.forEach(p => this.addProjectile(p, type));
+            return;
+        }
+        
         projectile.type = type;
         // シーンにメッシュを追加
         if (projectile.mesh) {
             this.scene.add(projectile.mesh);
         }
         this.projectiles.push(projectile);
+        
+        // 武器エフェクトを追加
+        this.addWeaponEffect(projectile);
+    }
+    
+    addWeaponEffect(projectile) {
+        if (!projectile.weapon || !window.game || !window.game.weaponEffects) return;
+        
+        const weapon = projectile.weapon;
+        const position = projectile.mesh.position.clone();
+        const direction = projectile.velocity.clone().normalize();
+        
+        // 武器タイプに応じたエフェクト
+        switch (weapon.id) {
+            case 'pulse_laser':
+                window.game.weaponEffects.createPulseLaserEffect(position, direction, weapon.color);
+                break;
+            case 'rapid_fire':
+                window.game.weaponEffects.createRapidFireEffect(position, direction, weapon.color);
+                break;
+            case 'plasma_cannon':
+                const plasmaEffect = window.game.weaponEffects.createPlasmaCannonEffect(position, direction, weapon.color);
+                // プラズマエフェクトをプロジェクタイルにアタッチ
+                if (plasmaEffect) {
+                    projectile.attachedEffect = plasmaEffect;
+                }
+                break;
+            case 'homing_missile':
+                const missileEffect = window.game.weaponEffects.createHomingMissileEffect(position, weapon.color);
+                if (missileEffect) {
+                    projectile.mesh.add(missileEffect.mesh);
+                    projectile.missileEffect = missileEffect;
+                }
+                break;
+        }
     }
 
     update(delta) {
@@ -34,7 +75,7 @@ export class ProjectileManager {
             // ライフタイム更新
             projectile.lifeTime -= delta;
             if (projectile.lifeTime <= 0) {
-                projectile.destroy();
+                this.removeProjectile(projectile);
             }
             
             // updateメソッドがある場合は呼び出す
@@ -46,8 +87,33 @@ export class ProjectileManager {
                 return false;
             }
             
+            // アタッチされたエフェクトの位置を更新
+            if (projectile.attachedEffect) {
+                projectile.attachedEffect.position.copy(projectile.mesh.position);
+            }
+            
             return true;
         });
+    }
+    
+    removeProjectile(projectile) {
+        // ミサイルエフェクトの停止
+        if (projectile.missileEffect) {
+            projectile.missileEffect.stopSmoke();
+        }
+        
+        // アタッチされたエフェクトの削除
+        if (projectile.attachedEffect && window.game && window.game.weaponEffects) {
+            const effectIndex = window.game.weaponEffects.activeEffects.findIndex(
+                e => e.mesh === projectile.attachedEffect
+            );
+            if (effectIndex !== -1) {
+                window.game.weaponEffects.activeEffects[effectIndex].dispose();
+                window.game.weaponEffects.activeEffects.splice(effectIndex, 1);
+            }
+        }
+        
+        projectile.destroy();
     }
     
     updateHoming(projectile, delta) {

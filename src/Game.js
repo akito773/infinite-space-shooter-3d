@@ -33,6 +33,11 @@ import { PerformanceOptimizer } from './systems/PerformanceOptimizer.js';
 import { WarpGate } from './objects/WarpGate.js';
 import { TargetingSystem } from './systems/TargetingSystem.js';
 import { WeaponSystem } from './systems/WeaponSystem.js';
+import { WeaponUI } from './systems/WeaponUI.js';
+import { WeaponEffects } from './effects/WeaponEffects.js';
+import { WeaponInventory } from './systems/WeaponInventory.js';
+import { WeaponSelectionUI } from './systems/WeaponSelectionUI.js';
+import { EnergySystem } from './systems/EnergySystem.js';
 import { PredictiveAiming } from './systems/PredictiveAiming.js';
 import { DamageNumbers } from './systems/DamageNumbers.js';
 import { HitMarkers } from './systems/HitMarkers.js';
@@ -251,8 +256,24 @@ export class Game {
         // ターゲティングシステム初期化
         this.targetingSystem = new TargetingSystem(this);
         
+        // 武器インベントリ初期化
+        this.weaponInventory = new WeaponInventory(this);
+        
         // 武器システム初期化
         this.weaponSystem = new WeaponSystem(this);
+        
+        // 武器UI初期化
+        this.weaponUI = new WeaponUI(this);
+        
+        // 武器選択UI初期化
+        this.weaponSelectionUI = new WeaponSelectionUI(this);
+        this.weaponInventory.weaponSelectionUI = this.weaponSelectionUI;
+        
+        // 武器エフェクト初期化
+        this.weaponEffects = new WeaponEffects(this);
+        
+        // エネルギーシステム初期化
+        this.energySystem = new EnergySystem(this);
         
         // 新しい戦闘システムの初期化
         this.predictiveAiming = new PredictiveAiming(this.scene, this.camera);
@@ -915,6 +936,26 @@ export class Game {
         // 武器システム更新
         if (this.weaponSystem) {
             this.weaponSystem.update(delta);
+        }
+        
+        // 武器UI更新
+        if (this.weaponUI) {
+            this.weaponUI.update();
+        }
+        
+        // 武器エフェクト更新
+        if (this.weaponEffects) {
+            this.weaponEffects.update(delta);
+        }
+        
+        // エネルギーシステム更新
+        if (this.energySystem) {
+            this.energySystem.update(delta);
+        }
+        
+        // 武器アンロック条件チェック
+        if (this.weaponInventory && this.frameCount % 60 === 0) { // 毎秒チェック
+            this.weaponInventory.checkUnlockConditions();
         }
         
         // 新しい戦闘システムの更新

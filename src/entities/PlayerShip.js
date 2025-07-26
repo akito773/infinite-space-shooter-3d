@@ -473,6 +473,12 @@ export class PlayerShip {
     }
 
     shoot() {
+        // WeaponSystemが存在する場合はそちらを使用
+        if (this.scene.userData.game && this.scene.userData.game.weaponSystem) {
+            return this.scene.userData.game.weaponSystem.firePrimary();
+        }
+        
+        // フォールバック：従来の射撃処理
         const now = Date.now();
         if (now - this.lastShotTime < this.fireRate) return null;
         

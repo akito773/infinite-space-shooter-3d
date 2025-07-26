@@ -1,7 +1,7 @@
 // 武器システム
 
 import * as THREE from 'three';
-import { WeaponTypes, WeaponRarity } from '../weapons/WeaponTypes.js';
+import { WeaponTypes, WeaponRarity, WeaponBalance } from '../weapons/WeaponTypes.js';
 
 export class WeaponSystem {
     constructor(game) {
@@ -12,6 +12,17 @@ export class WeaponSystem {
         this.primaryWeapon = WeaponTypes.PULSE_LASER;
         this.secondaryWeapon = null;
         this.specialWeapon = null;
+        
+        // 利用可能な武器インベントリ
+        this.availableWeapons = [
+            WeaponTypes.PULSE_LASER,
+            WeaponTypes.RAPID_FIRE,
+            WeaponTypes.PLASMA_CANNON,
+            WeaponTypes.SCATTER_SHOT
+        ];
+        
+        // 現在選択中の武器インデックス
+        this.currentWeaponIndex = 0;
         
         // 弾薬管理
         this.ammo = {
@@ -133,6 +144,15 @@ export class WeaponSystem {
         if (this.cooldowns.primary > 0) return null;
         
         const weapon = this.primaryWeapon;
+        
+        // エネルギー消費チェック
+        if (this.game.energySystem) {
+            const energyCost = WeaponBalance.ENERGY_CONSUMPTION[weapon.id] || 5;
+            if (!this.game.energySystem.useEnergy(energyCost)) {
+                return null; // エネルギー不足
+            }
+        }
+        
         this.cooldowns.primary = weapon.fireRate;
         
         // マズルフラッシュ
@@ -162,6 +182,14 @@ export class WeaponSystem {
         if (weapon.ammo && this.ammo.secondary <= 0) {
             this.game.showMessage('弾薬不足！', 1000);
             return;
+        }
+        
+        // エネルギー消費チェック
+        if (this.game.energySystem) {
+            const energyCost = WeaponBalance.ENERGY_CONSUMPTION[weapon.id] || 10;
+            if (!this.game.energySystem.useEnergy(energyCost)) {
+                return; // エネルギー不足
+            }
         }
         
         this.cooldowns.secondary = weapon.fireRate;
@@ -398,8 +426,78 @@ export class WeaponSystem {
     }
     
     switchWeapon(slot) {
-        // 武器切り替え処理
-        // TODO: インベントリシステムと連携
+        const index = slot - 1;
+        if (index < 0 || index >= this.availableWeapons.length) return;
+        
+        const newWeapon = this.availableWeapons[index];
+        if (!newWeapon || newWeapon === this.primaryWeapon) return;
+        
+        // 現在のビームを停止
+        if (this.activeBeams.length > 0) {
+            this.stopLaserArray();
+        }
+        
+        // 武器を切り替え
+        this.primaryWeapon = newWeapon;
+        this.currentWeaponIndex = index;
+        
+        // クールダウンをリセット
+        this.cooldowns.primary = 0;
+        
+        // 切り替えエフェクト
+        this.playWeaponSwitchEffect();
+        
+        // UIを更新
+        if (this.game.weaponUI) {
+            this.game.weaponUI.showWeaponSwitch(newWeapon.name);
+            this.game.weaponUI.update();
+        }
+        
+        // サウンド再生
+        this.game.soundManager?.play('weapon_switch');
+        
+        console.log(`武器を${newWeapon.name}に切り替えました`);
+    }
+    
+    playWeaponSwitchEffect() {
+        // 切り替えエフェクト
+        const flashDuration = 300;
+        const originalEmissive = this.muzzleFlash.material.emissive?.clone() || new THREE.Color(0x000000);
+        
+        // フラッシュエフェクト
+        this.muzzleFlash.material.color = new THREE.Color(this.primaryWeapon.color);
+        this.muzzleFlash.material.opacity = 0.8;
+        this.muzzleFlash.scale.setScalar(2);
+        
+        // フェードアウト
+        const startTime = Date.now();
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / flashDuration, 1);
+            
+            this.muzzleFlash.material.opacity = 0.8 * (1 - progress);
+            this.muzzleFlash.scale.setScalar(2 - progress);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
+    }
+    
+    stopLaserArray() {
+        this.activeBeams.forEach(beam => {
+            this.player.group.remove(beam);
+        });
+        this.activeBeams = [];
+    }
+    
+    addWeapon(weaponType) {
+        if (!this.availableWeapons.includes(weaponType)) {
+            this.availableWeapons.push(weaponType);
+            return true;
+        }
+        return false;
     }
     
     equipWeapon(weaponId, slot = 'primary') {
@@ -429,11 +527,15 @@ export class WeaponSystem {
     }
     
     updateAmmoUI() {
-        // TODO: UI更新
+        if (this.game.weaponUI) {
+            this.game.weaponUI.update();
+        }
     }
     
     updateWeaponUI() {
-        // TODO: UI更新
+        if (this.game.weaponUI) {
+            this.game.weaponUI.update();
+        }
     }
     
     addAmmo(type, amount) {

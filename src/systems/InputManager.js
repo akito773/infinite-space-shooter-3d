@@ -43,6 +43,11 @@ export class InputManager {
                 window.game.skillSystem.useSkill(parseInt(e.key));
             }
             
+            // 武器選択UI（Vキー）
+            if (e.key.toLowerCase() === 'v' && window.game && window.game.weaponSelectionUI) {
+                window.game.weaponSelectionUI.open();
+            }
+            
             // 採掘キー（Eキー）
             if (e.key.toLowerCase() === 'e' && window.game && window.game.miningSystem && window.game.player) {
                 // 近くの採掘可能な小惑星を探す
