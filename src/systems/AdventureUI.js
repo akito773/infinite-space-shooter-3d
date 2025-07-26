@@ -545,11 +545,25 @@ export class AdventureUI {
     startDialogue(dialogueData) {
         this.currentDialogue = dialogueData;
         this.currentDialogueIndex = 0;
-        this.showDialogue();
+        this.showCurrentDialogue();
     }
     
-    showDialogue() {
-        if (this.currentDialogueIndex >= this.currentDialogue.length) {
+    // 外部から呼び出されるメソッド
+    showDialogue(dialogues, onComplete) {
+        if (!dialogues || dialogues.length === 0) {
+            console.warn('No dialogues provided to showDialogue');
+            if (onComplete) onComplete();
+            return;
+        }
+        
+        this.currentDialogue = dialogues;
+        this.currentDialogueIndex = 0;
+        this.onDialogueCompleteCallback = onComplete;
+        this.showCurrentDialogue();
+    }
+    
+    showCurrentDialogue() {
+        if (!this.currentDialogue || this.currentDialogueIndex >= this.currentDialogue.length) {
             this.onDialogueComplete();
             return;
         }
@@ -622,12 +636,16 @@ export class AdventureUI {
     }
     
     nextDialogue() {
+        if (!this.currentDialogue || this.currentDialogueIndex >= this.currentDialogue.length) {
+            return;
+        }
+        
         if (this.currentDialogue[this.currentDialogueIndex].choices) {
             return; // 選択肢がある場合は進まない
         }
         
         this.currentDialogueIndex++;
-        this.showDialogue();
+        this.showCurrentDialogue();
     }
     
     showChoices(choices) {
@@ -659,15 +677,19 @@ export class AdventureUI {
             this.startDialogue(choice.nextDialogue);
         } else {
             this.currentDialogueIndex++;
-            this.showDialogue();
+            this.showCurrentDialogue();
         }
     }
     
     onDialogueComplete() {
         this.dialogueBox.style.display = 'none';
         
-        // シーン完了処理
-        if (this.currentScene.onDialogueComplete) {
+        // コールバックがある場合は実行
+        if (this.onDialogueCompleteCallback) {
+            const callback = this.onDialogueCompleteCallback;
+            this.onDialogueCompleteCallback = null;
+            callback();
+        } else if (this.currentScene && this.currentScene.onDialogueComplete) {
             this.currentScene.onDialogueComplete();
         } else {
             this.hide();
