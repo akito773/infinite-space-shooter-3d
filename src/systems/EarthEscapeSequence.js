@@ -1,9 +1,11 @@
 import { AdventureUI } from './AdventureUI.js';
+import { LaunchSequence3D } from './LaunchSequence3D.js';
 
 export class EarthEscapeSequence {
     constructor(game) {
         this.game = game;
         this.adventureUI = new AdventureUI(game);
+        this.launchSequence3D = new LaunchSequence3D(game);
         this.isCompleted = false;
     }
     
