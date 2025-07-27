@@ -10,6 +10,8 @@ export class EarthEscapeSequence {
     }
     
     start() {
+        console.log('地球脱出シーケンス開始');
+        
         // ゲームを一時停止
         this.game.isPaused = true;
         
@@ -33,11 +35,14 @@ export class EarthEscapeSequence {
     }
     
     showInitialBriefing() {
+        console.log('初期ブリーフィング開始');
+        
         const scene = {
             background: 'bg_commander_office',
             characters: []
         };
         
+        console.log('AdventureUI表示');
         this.adventureUI.show(scene);
         
         const dialogues = [

@@ -622,15 +622,32 @@ export class Game {
         
         // ゲーム開始時にストーリー進行システムをチェック
         setTimeout(() => {
+            console.log('ストーリー進行チェック');
+            console.log('gameStarted:', this.storyProgressionSystem?.progress?.flags?.gameStarted);
+            
             if (this.storyProgressionSystem && !this.storyProgressionSystem.progress.flags.gameStarted) {
+                console.log('初回プレイ検出 - 地球脱出シーケンスを開始');
                 // 初回プレイ時は地球脱出シーケンスを開始
                 this.storyProgressionSystem.progress.flags.gameStarted = true;
                 this.storyProgressionSystem.saveProgress();
-                if (this.earthEscapeSequence) {
-                    this.earthEscapeSequence.start();
+                
+                // 着陸メニューを閉じる
+                if (this.landingSystem && this.landingSystem.landingMenu) {
+                    console.log('着陸メニューを閉じる');
+                    this.landingSystem.landingMenu.close();
                 }
+                
+                if (this.earthEscapeSequence) {
+                    console.log('地球脱出シーケンスを開始');
+                    this.earthEscapeSequence.start();
+                } else {
+                    console.error('earthEscapeSequenceが初期化されていません');
+                }
+            } else {
+                console.log('既にゲーム開始済み');
+                console.log('Ctrl+Eで地球脱出シーケンスをリセットできます');
             }
-        }, 1000);
+        }, 2000);
     }
 
     animate() {

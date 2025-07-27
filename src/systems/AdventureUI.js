@@ -371,6 +371,15 @@ export class AdventureUI {
         canvas.height = 1080;
         const ctx = canvas.getContext('2d');
         
+        // デフォルト背景
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#001a33');
+        gradient.addColorStop(1, '#000511');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const defaultBg = canvas.toDataURL();
+        
         // シーン別の背景を生成
         this.backgrounds = {
             'bg_commander_office': this.createCommanderOffice(ctx, canvas),
@@ -379,18 +388,13 @@ export class AdventureUI {
             'bg_space_station': this.createSpaceStation(ctx, canvas)
         };
         
-        // デフォルト背景
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#001a33');
-        gradient.addColorStop(1, '#000511');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        return canvas.toDataURL();
+        return defaultBg;
     }
     
     createCommanderOffice(ctx, canvas) {
         // 総統室の背景
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
         // 暗めの部屋
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, '#1a1a2e');
