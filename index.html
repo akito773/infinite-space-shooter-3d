@@ -239,6 +239,31 @@
                 transform: translateX(-50%) translateY(-50px);
             }
         }
+        
+        /* ストーリー進行UI用アニメーション */
+        @keyframes progressFlash {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+            }
+        }
+        
+        @keyframes chapterChange {
+            0% {
+                transform: scale(1);
+                color: #00ffff;
+            }
+            50% {
+                transform: scale(1.2);
+                color: #ffffff;
+            }
+            100% {
+                transform: scale(1);
+                color: #00ffff;
+            }
+        }
     </style>
 </head>
 <body>

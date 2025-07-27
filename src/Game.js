@@ -54,6 +54,8 @@ import { StoryObjectivesUI } from './systems/StoryObjectivesUI.js';
 import { CompanionInteractions } from './systems/CompanionInteractions.js';
 import { AchievementSystem } from './systems/AchievementSystem.js';
 import { EarthEscapeSequence } from './systems/EarthEscapeSequence.js';
+import { StoryProgressionSystem } from './systems/StoryProgressionSystem.js';
+import { StoryProgressUI } from './systems/StoryProgressUI.js';
 
 export class Game {
     constructor() {
@@ -301,6 +303,10 @@ export class Game {
         
         // 地球脱出シーケンス初期化
         this.earthEscapeSequence = new EarthEscapeSequence(this);
+        
+        // ストーリー進行システム初期化
+        this.storyProgressionSystem = new StoryProgressionSystem(this);
+        this.storyProgressUI = new StoryProgressUI(this);
         
         // 惑星発見システム初期化（Planetクラスを渡す）
         this.Planet = Planet;
@@ -983,6 +989,16 @@ export class Game {
         // ストーリー進行システム更新
         if (this.storySystem) {
             this.storySystem.update(delta);
+        }
+        
+        // ストーリー進行管理システム更新
+        if (this.storyProgressionSystem) {
+            this.storyProgressionSystem.update(delta);
+        }
+        
+        // ストーリー進行UI更新
+        if (this.storyProgressUI) {
+            this.storyProgressUI.update();
         }
         
         // 相棒システム更新

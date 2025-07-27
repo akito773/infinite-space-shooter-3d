@@ -23,6 +23,12 @@ export class EarthEscapeSequence {
             this.game.soundManager.playBGM('emergency');
         }
         
+        // ストーリー進行システムに通知
+        if (this.game.storyProgressionSystem) {
+            this.game.storyProgressionSystem.progress.flags.earthEscapeStarted = true;
+            this.game.storyProgressionSystem.saveProgress();
+        }
+        
         this.showInitialBriefing();
     }
     
@@ -387,6 +393,12 @@ export class EarthEscapeSequence {
         if (this.game.storyFlags) {
             this.game.storyFlags.hasCompletedEarthEscape = true;
             this.game.storyFlags.hasMetLuna = true;
+        }
+        
+        // ストーリー進行システムに通知
+        if (this.game.storyProgressionSystem) {
+            this.game.storyProgressionSystem.progress.flags.earthEscapeCompleted = true;
+            this.game.storyProgressionSystem.saveProgress();
         }
         
         // ルナをアクティブ化

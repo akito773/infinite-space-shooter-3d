@@ -1,296 +1,494 @@
+// ストーリー進行管理システム
+
 export class StoryProgressionSystem {
     constructor(game) {
         this.game = game;
         
         // ストーリー進行状態
-        this.storyFlags = {
-            tutorialComplete: false,
-            firstWaveComplete: false,
-            midBossDefeated: false,
-            raidBossDefeated: false,
-            marsUnlocked: false,
-            dataFragmentsCollected: 0,
-            voidOriginDiscovered: false,
-            // 新しいストーリーフラグ
-            hasMetLuna: false,
-            darkNebulaEncountered: false,
-            darkNebulaIdentityRevealed: false,
-            jupiterUnlocked: false,
-            saturnUnlocked: false,
-            ancientSealCount: 0,
-            lunaFatherSaved: false
+        this.progress = {
+            chapter: 0,  // 0: プロローグ, 1-4: 各章
+            phase: 0,    // 章内のフェーズ
+            mainMissionIndex: 0,  // 現在のメインミッション
+            
+            // ストーリーフラグ
+            flags: {
+                // 第1章
+                gameStarted: false,
+                earthEscapeStarted: false,
+                earthEscapeCompleted: false,
+                tutorialCompleted: false,
+                firstStationVisited: false,
+                
+                // 第2章
+                marsReached: false,
+                marsColonySaved: false,
+                firstBossDefeated: false,
+                jupiterStationUnlocked: false,
+                voidWeaknessDiscovered: false,
+                
+                // 第3章
+                saturnRingsReached: false,
+                raidBossDefeated: false,
+                allianceFormed: false,
+                starfighterUpgraded: false,
+                
+                // 第4章
+                voidGateDiscovered: false,
+                lunaSecretRevealed: false,
+                finalBattleReady: false,
+                
+                // エンディング
+                normalEndingAchieved: false,
+                goodEndingAchieved: false,
+                trueEndingAchieved: false
+            },
+            
+            // アンロック状態
+            unlockedAreas: ["earth_orbit"],
+            unlockedWeapons: ["pulse_laser"],
+            unlockedStations: [],
+            unlockedFeatures: ["basic_controls"],
+            
+            // キャラクター関連
+            companionTrustLevel: 0,
+            metCharacters: [],
+            characterRelationships: {},
+            
+            // 統計
+            totalMissionsCompleted: 0,
+            mainMissionsCompleted: 0,
+            sideMissionsCompleted: 0,
+            secretsFound: 0,
+            totalPlayTime: 0
         };
         
-        // 現在のストーリーフェーズ
-        this.currentPhase = 'EARTH_DEFENSE'; // EARTH_DEFENSE -> INVESTIGATION -> MARS_JOURNEY
+        // ストーリーイベント定義
+        this.storyEvents = this.defineStoryEvents();
         
-        // ストーリーイベント
-        this.storyEvents = {
-            GAME_START: {
-                triggered: false,
-                dialogue: [
-                    "警告：未知の敵性体「ヴォイド」が地球圏に侵入",
-                    "全パイロットは迎撃態勢を取れ！",
-                    "敵の目的は不明...だが、絶対に通すな！"
-                ]
+        // ミッション定義
+        this.missions = this.defineMissions();
+        
+        // セーブデータの読み込み
+        this.loadProgress();
+    }
+    
+    defineStoryEvents() {
+        return {
+            // ゲーム開始
+            gameStart: {
+                id: "game_start",
+                trigger: () => !this.progress.flags.gameStarted,
+                action: () => {
+                    this.progress.flags.gameStarted = true;
+                    this.progress.chapter = 0;
+                    this.progress.phase = 1;
+                    
+                    // オープニングイベント開始
+                    setTimeout(() => {
+                        if (this.game.earthEscapeSequence) {
+                            this.game.earthEscapeSequence.start();
+                        }
+                    }, 1000);
+                }
             },
-            MID_BOSS_DEFEATED: {
-                triggered: false,
-                dialogue: [
-                    "敵中型艦を撃破！",
-                    "待て...敵艦からデータストリームを検出",
-                    "これは...座標データ？火星方面を示している...",
-                    "データフラグメント 1/3 を回収"
-                ]
+            
+            // 地球脱出完了
+            earthEscapeComplete: {
+                id: "earth_escape_complete",
+                trigger: () => this.progress.flags.earthEscapeCompleted && !this.progress.flags.tutorialCompleted,
+                action: () => {
+                    this.progress.chapter = 1;
+                    this.progress.phase = 1;
+                    
+                    // チュートリアル開始
+                    this.startTutorial();
+                    
+                    // 最初のミッション設定
+                    this.setCurrentMission("tutorial_combat");
+                }
             },
-            RAID_BOSS_DEFEATED: {
-                triggered: false,
-                dialogue: [
-                    "超大型戦艦撃破！信じられない...",
-                    "大量のデータを回収中...解析を開始",
-                    "判明：ヴォイドは火星の古代遺跡を探している",
-                    "データフラグメント 3/3 回収完了",
-                    "火星への航路データが復元されました"
-                ]
+            
+            // 火星到達
+            marsArrival: {
+                id: "mars_arrival",
+                trigger: () => {
+                    const mars = this.game.planets.find(p => p.name === "Mars");
+                    return mars && mars.discovered && !this.progress.flags.marsReached;
+                },
+                action: () => {
+                    this.progress.flags.marsReached = true;
+                    this.progress.chapter = 2;
+                    this.progress.phase = 1;
+                    
+                    // 火星イベント
+                    this.triggerMarsEvent();
+                }
             },
-            MARS_UNLOCKED: {
-                triggered: false,
-                dialogue: [
-                    "火星コロニーから緊急信号を受信",
-                    "「こちら火星研究施設...ヴォイドの攻撃を受けている」",
-                    "「古代遺跡の防衛システムが...まだ生きて...」",
-                    "信号途絶...急げ！火星へ向かうんだ！",
-                    "新たな目的地：火星が解放されました"
-                ]
-            },
-            WAVE_10_COMPLETE: {
-                triggered: false,
-                dialogue: [
-                    "偵察部隊から報告",
-                    "ヴォイドの増援が接近中...これは、まずい",
-                    "データフラグメント 2/3 を敵残骸から回収"
-                ]
+            
+            // ボス撃破
+            firstBossDefeat: {
+                id: "first_boss_defeat",
+                trigger: () => this.progress.flags.firstBossDefeated && !this.progress.flags.jupiterStationUnlocked,
+                action: () => {
+                    this.progress.flags.jupiterStationUnlocked = true;
+                    this.unlockArea("jupiter");
+                    this.unlockWeapon("plasma_cannon");
+                    
+                    // 報酬とメッセージ
+                    this.game.showNotification("木星ステーションへのアクセスが解放されました！");
+                }
             }
         };
-        
-        // ダイアログ表示用
-        this.currentDialogue = null;
-        this.dialogueIndex = 0;
-        this.dialogueTimer = 0;
-        this.dialogueDisplayTime = 4000; // 4秒表示
-        
-        this.createDialogueUI();
     }
     
-    createDialogueUI() {
-        // ストーリーダイアログ表示用UI
-        const dialogueContainer = document.createElement('div');
-        dialogueContainer.id = 'story-dialogue';
-        dialogueContainer.style.cssText = `
-            position: absolute;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,20,40,0.9));
-            border: 2px solid #00ffff;
-            border-radius: 10px;
-            padding: 20px;
-            display: none;
-            z-index: 500;
-            box-shadow: 0 0 30px rgba(0,255,255,0.5);
-        `;
-        
-        const speaker = document.createElement('div');
-        speaker.style.cssText = `
-            color: #00ffff;
-            font-size: 14px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        `;
-        speaker.textContent = 'SYSTEM MESSAGE';
-        
-        const dialogueText = document.createElement('div');
-        dialogueText.style.cssText = `
-            color: white;
-            font-size: 18px;
-            line-height: 1.5;
-            text-shadow: 0 0 10px rgba(0,255,255,0.3);
-        `;
-        
-        const skipHint = document.createElement('div');
-        skipHint.style.cssText = `
-            position: absolute;
-            bottom: 5px;
-            right: 10px;
-            color: #666;
-            font-size: 12px;
-        `;
-        skipHint.textContent = 'Press SPACE to continue';
-        
-        dialogueContainer.appendChild(speaker);
-        dialogueContainer.appendChild(dialogueText);
-        dialogueContainer.appendChild(skipHint);
-        
-        document.body.appendChild(dialogueContainer);
-        
-        this.dialogueUI = {
-            container: dialogueContainer,
-            speaker: speaker,
-            text: dialogueText
+    defineMissions() {
+        return {
+            // チュートリアルミッション
+            tutorial_combat: {
+                id: "tutorial_combat",
+                type: "main",
+                chapter: 1,
+                name: "基礎戦闘訓練",
+                description: "ヴォイド・スカウトを3体撃破する",
+                objectives: [
+                    { type: "defeat_enemies", target: "void_scout", count: 3, current: 0 }
+                ],
+                rewards: {
+                    exp: 100,
+                    credits: 1000,
+                    items: ["energy_cell"]
+                },
+                onComplete: () => {
+                    this.progress.flags.tutorialCompleted = true;
+                    this.unlockWeapon("rapid_fire");
+                    this.unlockFeature("weapon_switching");
+                }
+            },
+            
+            // 火星救援ミッション
+            mars_rescue: {
+                id: "mars_rescue",
+                type: "main",
+                chapter: 2,
+                name: "火星コロニー救援",
+                description: "生存者を守りながらヴォイドの攻撃を撃退する",
+                objectives: [
+                    { type: "defend", target: "mars_colony", duration: 180, current: 0 },
+                    { type: "defeat_enemies", target: "void", count: 20, current: 0 }
+                ],
+                rewards: {
+                    exp: 500,
+                    credits: 5000,
+                    items: ["shield_upgrade", "missile_launcher"]
+                },
+                onComplete: () => {
+                    this.progress.flags.marsColonySaved = true;
+                    this.unlockCharacter("captain_ray");
+                }
+            },
+            
+            // サイドミッション例
+            asteroid_mining: {
+                id: "asteroid_mining",
+                type: "side",
+                name: "小惑星採掘護衛",
+                description: "採掘船を海賊から守る",
+                objectives: [
+                    { type: "protect", target: "mining_ship", duration: 120 },
+                    { type: "defeat_enemies", target: "pirate", count: 10, current: 0 }
+                ],
+                rewards: {
+                    credits: 3000,
+                    items: ["rare_mineral"]
+                }
+            }
         };
     }
     
+    // ストーリー進行チェック
     update(delta) {
-        // ダイアログ表示の更新
-        if (this.currentDialogue) {
-            this.dialogueTimer += delta * 1000;
-            
-            if (this.dialogueTimer >= this.dialogueDisplayTime) {
-                this.nextDialogue();
+        // プレイ時間を更新
+        this.progress.totalPlayTime += delta;
+        
+        // ストーリーイベントのトリガーチェック
+        Object.values(this.storyEvents).forEach(event => {
+            if (event.trigger()) {
+                console.log(`Triggering story event: ${event.id}`);
+                event.action();
+                this.saveProgress();
             }
-        }
+        });
         
-        // ストーリー進行チェック
-        this.checkStoryProgress();
-    }
-    
-    checkStoryProgress() {
-        // ゲーム開始時
-        if (!this.storyEvents.GAME_START.triggered && this.game.enemies && this.game.enemies.length > 0) {
-            this.triggerStoryEvent('GAME_START');
-        }
-        
-        // Wave 10 完了
-        if (!this.storyEvents.WAVE_10_COMPLETE.triggered && 
-            this.game.waveManager && this.game.waveManager.currentWave >= 10) {
-            this.triggerStoryEvent('WAVE_10_COMPLETE');
-            this.storyFlags.dataFragmentsCollected = 2;
-        }
-        
-        // 火星解放チェック
-        if (!this.storyFlags.marsUnlocked && 
-            this.storyFlags.dataFragmentsCollected >= 3 &&
-            this.storyFlags.raidBossDefeated) {
-            this.unlockMars();
+        // 現在のミッションの進行状況を確認
+        if (this.currentMission) {
+            this.updateMissionProgress();
         }
     }
     
-    onBossDefeated(bossType) {
-        if (bossType === 'BossBattleship' && !this.storyFlags.midBossDefeated) {
-            this.storyFlags.midBossDefeated = true;
-            this.storyFlags.dataFragmentsCollected = 1;
-            this.triggerStoryEvent('MID_BOSS_DEFEATED');
-        } else if (bossType === 'RaidBoss' && !this.storyFlags.raidBossDefeated) {
-            this.storyFlags.raidBossDefeated = true;
-            this.storyFlags.dataFragmentsCollected = 3;
-            this.triggerStoryEvent('RAID_BOSS_DEFEATED');
+    // チュートリアル開始
+    startTutorial() {
+        if (this.game.tutorialSystem) {
+            this.game.tutorialSystem.startTutorial('controls');
+        }
+        
+        // ルナのガイダンス
+        if (this.game.companionSystem) {
+            setTimeout(() => {
+                this.game.companionSystem.showMessage(
+                    "基本操作を確認しましょう。WASDで移動、マウスで照準、左クリックで射撃です。",
+                    5000,
+                    'tutorial'
+                );
+            }, 2000);
         }
     }
     
-    unlockMars() {
-        this.storyFlags.marsUnlocked = true;
-        this.storyFlags.voidOriginDiscovered = true;
-        this.currentPhase = 'INVESTIGATION';
-        
-        setTimeout(() => {
-            this.triggerStoryEvent('MARS_UNLOCKED');
+    // 火星イベント
+    triggerMarsEvent() {
+        if (this.game.adventureUI) {
+            const scene = {
+                background: 'bg_mars_surface',
+                characters: []
+            };
             
-            // 火星を実際に解放
-            if (this.game.onMarsUnlocked) {
-                this.game.onMarsUnlocked();
-            }
-        }, 2000);
+            const dialogues = [
+                {
+                    text: '火星の軌道に到着した。赤い惑星の表面には、かつて繁栄していたコロニーの残骸が見える。'
+                },
+                {
+                    character: 'luna',
+                    name: 'ルナ',
+                    text: 'パイロット、火星コロニーから微弱な救難信号を検知しました！',
+                    sprite: 'luna_surprised'
+                },
+                {
+                    character: 'luna',
+                    name: 'ルナ',
+                    text: 'まだ生存者がいるかもしれません。急ぎましょう！',
+                    sprite: 'luna_urgent'
+                }
+            ];
+            
+            this.game.adventureUI.show(scene);
+            this.game.adventureUI.showDialogue(dialogues, () => {
+                this.game.adventureUI.hide();
+                this.setCurrentMission("mars_rescue");
+            });
+        }
     }
     
-    triggerStoryEvent(eventName) {
-        const event = this.storyEvents[eventName];
-        if (!event || event.triggered) return;
-        
-        event.triggered = true;
-        this.showDialogue(event.dialogue);
-    }
-    
-    showDialogue(dialogues) {
-        this.currentDialogue = dialogues;
-        this.dialogueIndex = 0;
-        this.dialogueTimer = 0;
-        
-        this.displayCurrentDialogue();
-    }
-    
-    displayCurrentDialogue() {
-        if (!this.currentDialogue || this.dialogueIndex >= this.currentDialogue.length) {
-            this.hideDialogue();
+    // ミッション管理
+    setCurrentMission(missionId) {
+        const mission = this.missions[missionId];
+        if (!mission) {
+            console.error(`Mission not found: ${missionId}`);
             return;
         }
         
-        this.dialogueUI.container.style.display = 'block';
-        this.dialogueUI.text.textContent = this.currentDialogue[this.dialogueIndex];
+        this.currentMission = { ...mission };
         
-        // タイプライター効果（オプション）
-        this.animateText();
-    }
-    
-    animateText() {
-        const fullText = this.dialogueUI.text.textContent;
-        this.dialogueUI.text.textContent = '';
-        let charIndex = 0;
-        
-        const typeInterval = setInterval(() => {
-            if (charIndex < fullText.length) {
-                this.dialogueUI.text.textContent += fullText[charIndex];
-                charIndex++;
-            } else {
-                clearInterval(typeInterval);
-            }
-        }, 30);
-    }
-    
-    nextDialogue() {
-        this.dialogueIndex++;
-        this.dialogueTimer = 0;
-        
-        if (this.dialogueIndex < this.currentDialogue.length) {
-            this.displayCurrentDialogue();
-        } else {
-            this.hideDialogue();
-        }
-    }
-    
-    skipDialogue() {
-        if (this.currentDialogue) {
-            this.nextDialogue();
-        }
-    }
-    
-    hideDialogue() {
-        this.dialogueUI.container.style.display = 'none';
-        this.currentDialogue = null;
-    }
-    
-    // セーブデータ
-    serialize() {
-        return {
-            storyFlags: this.storyFlags,
-            currentPhase: this.currentPhase,
-            storyEvents: Object.keys(this.storyEvents).reduce((acc, key) => {
-                acc[key] = { triggered: this.storyEvents[key].triggered };
-                return acc;
-            }, {})
-        };
-    }
-    
-    deserialize(data) {
-        if (data.storyFlags) this.storyFlags = data.storyFlags;
-        if (data.currentPhase) this.currentPhase = data.currentPhase;
-        if (data.storyEvents) {
-            Object.keys(data.storyEvents).forEach(key => {
-                if (this.storyEvents[key]) {
-                    this.storyEvents[key].triggered = data.storyEvents[key].triggered;
-                }
+        // ミッションUIに表示
+        if (this.game.missionSystem) {
+            this.game.missionSystem.addMission({
+                id: mission.id,
+                name: mission.name,
+                description: mission.description,
+                type: mission.type,
+                objectives: mission.objectives.map(obj => ({ ...obj }))
             });
         }
+        
+        // ミッション開始メッセージ
+        this.game.showNotification(`新しいミッション: ${mission.name}`);
+    }
+    
+    // ミッション進行更新
+    updateMissionProgress() {
+        if (!this.currentMission) return;
+        
+        let allCompleted = true;
+        
+        this.currentMission.objectives.forEach(objective => {
+            if (objective.current < (objective.count || objective.duration)) {
+                allCompleted = false;
+            }
+        });
+        
+        if (allCompleted) {
+            this.completeMission(this.currentMission.id);
+        }
+    }
+    
+    // ミッション完了
+    completeMission(missionId) {
+        const mission = this.missions[missionId];
+        if (!mission) return;
+        
+        // 報酬付与
+        if (mission.rewards) {
+            if (mission.rewards.exp && this.game.player) {
+                this.game.player.addExperience(mission.rewards.exp);
+            }
+            if (mission.rewards.credits) {
+                this.game.addCredits(mission.rewards.credits);
+            }
+            if (mission.rewards.items) {
+                mission.rewards.items.forEach(item => {
+                    this.game.addItem(item);
+                });
+            }
+        }
+        
+        // 完了処理
+        if (mission.onComplete) {
+            mission.onComplete();
+        }
+        
+        // 統計更新
+        this.progress.totalMissionsCompleted++;
+        if (mission.type === 'main') {
+            this.progress.mainMissionsCompleted++;
+            this.progress.mainMissionIndex++;
+        } else {
+            this.progress.sideMissionsCompleted++;
+        }
+        
+        // UI更新
+        this.game.showNotification(`ミッション完了: ${mission.name}`);
+        
+        // 次のミッションチェック
+        this.checkNextMission();
+        
+        this.currentMission = null;
+        this.saveProgress();
+    }
+    
+    // 次のミッション確認
+    checkNextMission() {
+        // チャプターとフェーズに基づいて次のミッションを決定
+        const chapter = this.progress.chapter;
+        const phase = this.progress.phase;
+        
+        // ストーリー進行に応じた次のミッション
+        if (chapter === 1 && phase === 1 && this.progress.flags.tutorialCompleted) {
+            this.progress.phase = 2;
+            // 次のミッションを設定
+        }
+    }
+    
+    // エリア解放
+    unlockArea(areaId) {
+        if (!this.progress.unlockedAreas.includes(areaId)) {
+            this.progress.unlockedAreas.push(areaId);
+            console.log(`Area unlocked: ${areaId}`);
+            
+            // ワープシステムに通知
+            if (this.game.warpSystem) {
+                this.game.warpSystem.unlockDestination(areaId);
+            }
+        }
+    }
+    
+    // 武器解放
+    unlockWeapon(weaponId) {
+        if (!this.progress.unlockedWeapons.includes(weaponId)) {
+            this.progress.unlockedWeapons.push(weaponId);
+            console.log(`Weapon unlocked: ${weaponId}`);
+            
+            // 武器インベントリに通知
+            if (this.game.weaponInventory) {
+                this.game.weaponInventory.unlockWeapon(weaponId);
+            }
+        }
+    }
+    
+    // 機能解放
+    unlockFeature(featureId) {
+        if (!this.progress.unlockedFeatures.includes(featureId)) {
+            this.progress.unlockedFeatures.push(featureId);
+            console.log(`Feature unlocked: ${featureId}`);
+        }
+    }
+    
+    // キャラクター解放
+    unlockCharacter(characterId) {
+        if (!this.progress.metCharacters.includes(characterId)) {
+            this.progress.metCharacters.push(characterId);
+            this.progress.characterRelationships[characterId] = 0;
+            console.log(`Character unlocked: ${characterId}`);
+        }
+    }
+    
+    // 関係値更新
+    updateRelationship(characterId, change) {
+        if (this.progress.characterRelationships[characterId] !== undefined) {
+            this.progress.characterRelationships[characterId] += change;
+            console.log(`${characterId} relationship: ${this.progress.characterRelationships[characterId]}`);
+        }
+    }
+    
+    // チャプター取得
+    getCurrentChapter() {
+        const chapters = ["プロローグ", "第1章", "第2章", "第3章", "第4章", "エピローグ"];
+        return chapters[this.progress.chapter] || "不明";
+    }
+    
+    // 進行度パーセンテージ
+    getProgressPercentage() {
+        const totalMainMissions = Object.values(this.missions).filter(m => m.type === 'main').length;
+        return Math.floor((this.progress.mainMissionsCompleted / totalMainMissions) * 100);
+    }
+    
+    // セーブ
+    saveProgress() {
+        const saveData = {
+            version: "1.0",
+            timestamp: Date.now(),
+            progress: this.progress
+        };
+        
+        localStorage.setItem('storyProgress', JSON.stringify(saveData));
+        console.log('Story progress saved');
+    }
+    
+    // ロード
+    loadProgress() {
+        const savedData = localStorage.getItem('storyProgress');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                if (data.version === "1.0") {
+                    this.progress = data.progress;
+                    console.log('Story progress loaded');
+                }
+            } catch (e) {
+                console.error('Failed to load story progress:', e);
+            }
+        }
+    }
+    
+    // リセット
+    resetProgress() {
+        this.progress = {
+            chapter: 0,
+            phase: 0,
+            mainMissionIndex: 0,
+            flags: {},
+            unlockedAreas: ["earth_orbit"],
+            unlockedWeapons: ["pulse_laser"],
+            unlockedStations: [],
+            unlockedFeatures: ["basic_controls"],
+            companionTrustLevel: 0,
+            metCharacters: [],
+            characterRelationships: {},
+            totalMissionsCompleted: 0,
+            mainMissionsCompleted: 0,
+            sideMissionsCompleted: 0,
+            secretsFound: 0,
+            totalPlayTime: 0
+        };
+        
+        localStorage.removeItem('storyProgress');
+        console.log('Story progress reset');
     }
 }
