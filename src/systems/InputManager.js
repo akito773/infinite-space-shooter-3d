@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class InputManager {
-    constructor(camera) {
+    constructor(camera, game = null) {
         this.camera = camera;
+        this.game = game || window.game;
         this.keys = {
             w: false,
             a: false,
@@ -48,8 +49,22 @@ export class InputManager {
                 window.game.weaponSelectionUI.open();
             }
             
+            // Ctrl+E: 地球脱出シーケンスのリセット（デバッグ用）
+            if (e.key.toLowerCase() === 'e' && e.ctrlKey && this.game && this.game.earthEscapeSequence) {
+                e.preventDefault();
+                this.game.earthEscapeSequence.isCompleted = false;
+                if (this.game.storyProgressionSystem) {
+                    this.game.storyProgressionSystem.progress.flags.earthEscapeStarted = false;
+                    this.game.storyProgressionSystem.progress.flags.earthEscapeCompleted = false;
+                    this.game.storyProgressionSystem.saveProgress();
+                }
+                this.game.earthEscapeSequence.start();
+                console.log('地球脱出シーケンスをリセットしました');
+                return;
+            }
+            
             // 採掘キー（Eキー）
-            if (e.key.toLowerCase() === 'e' && window.game && window.game.miningSystem && window.game.player) {
+            if (e.key.toLowerCase() === 'e' && !e.ctrlKey && window.game && window.game.miningSystem && window.game.player) {
                 // 近くの採掘可能な小惑星を探す
                 const playerPos = window.game.player.group.position;
                 window.game.asteroidFields.forEach(field => {

@@ -153,7 +153,7 @@ export class Game {
         this.starField = new StarField(this.scene);
 
         // 入力管理
-        this.inputManager = new InputManager(this.camera);
+        this.inputManager = new InputManager(this.camera, this);
 
         // 弾丸管理
         this.projectileManager = new ProjectileManager(this.scene);
@@ -619,6 +619,18 @@ export class Game {
 
     start() {
         this.animate();
+        
+        // ゲーム開始時にストーリー進行システムをチェック
+        setTimeout(() => {
+            if (this.storyProgressionSystem && !this.storyProgressionSystem.progress.flags.gameStarted) {
+                // 初回プレイ時は地球脱出シーケンスを開始
+                this.storyProgressionSystem.progress.flags.gameStarted = true;
+                this.storyProgressionSystem.saveProgress();
+                if (this.earthEscapeSequence) {
+                    this.earthEscapeSequence.start();
+                }
+            }
+        }, 1000);
     }
 
     animate() {

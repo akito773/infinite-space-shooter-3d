@@ -48,19 +48,19 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: 'パイロット！緊急事態だ！',
-                sprite: 'commander_urgent'
+                sprite: 'urgent'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: 'ヴォイドの大群が地球に接近している！',
-                sprite: 'commander_serious'
+                sprite: 'serious'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: '防衛ラインは既に突破された...もはや地球は持たない。',
-                sprite: 'commander_sad'
+                sprite: 'sad'
             },
             {
                 character: 'player',
@@ -70,13 +70,13 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: '避難船の護衛は別部隊が担当している。',
-                sprite: 'commander_serious'
+                sprite: 'serious'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: '君には別の任務がある。我々の希望を託したい。',
-                sprite: 'commander_normal'
+                sprite: 'normal'
             }
         ];
         
@@ -91,30 +91,19 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: '君には最新鋭の試作機「スターファイター」を託す。',
-                sprite: 'commander_normal'
+                sprite: 'normal'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: 'この機体には、我々の全ての技術が詰まっている。',
-                sprite: 'commander_proud'
+                sprite: 'proud'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: '生き延びて、人類の希望となってくれ。',
-                sprite: 'commander_serious'
-            }
-        ];
-        
-        const choices = [
-            {
-                text: '了解しました！必ず生き延びて見せます！',
-                action: () => this.acceptMission()
-            },
-            {
-                text: 'でも、地球を見捨てるなんて...',
-                action: () => this.hesitateAboutLeaving()
+                sprite: 'serious'
             }
         ];
         
@@ -122,8 +111,17 @@ export class EarthEscapeSequence {
             character: 'commander',
             name: '総統',
             text: '決断の時だ。どうする？',
-            sprite: 'commander_serious',
-            choices: choices
+            sprite: 'serious',
+            choices: [
+                {
+                    text: '了解しました！必ず生き延びて見せます！',
+                    onSelect: () => this.acceptMission()
+                },
+                {
+                    text: 'でも、地球を見捨てるなんて...',
+                    onSelect: () => this.hesitateAboutLeaving()
+                }
+            ]
         });
         
         this.adventureUI.showDialogue(dialogues);
@@ -135,13 +133,13 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: 'よく言った。その覚悟があれば大丈夫だ。',
-                sprite: 'commander_proud'
+                sprite: 'proud'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: '格納庫で準備を整えろ。時間がない！',
-                sprite: 'commander_urgent'
+                sprite: 'urgent'
             }
         ];
         
@@ -156,19 +154,19 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: '気持ちは分かる...私も同じ思いだ。',
-                sprite: 'commander_sad'
+                sprite: 'sad'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: 'だが、全滅しては元も子もない。',
-                sprite: 'commander_serious'
+                sprite: 'serious'
             },
             {
                 character: 'commander',
                 name: '総統',
                 text: '君が生き延びることが、地球への最大の貢献だ。',
-                sprite: 'commander_normal'
+                sprite: 'normal'
             },
             {
                 character: 'player',
@@ -197,13 +195,13 @@ export class EarthEscapeSequence {
                 character: 'mechanic',
                 name: '整備主任',
                 text: 'パイロット！機体の準備は完了しています！',
-                sprite: 'mechanic_normal'
+                sprite: 'normal'
             },
             {
                 character: 'mechanic',
                 name: '整備主任',
                 text: '武装は最大積載、シールドも強化済みです。',
-                sprite: 'mechanic_proud'
+                sprite: 'proud'
             },
             {
                 text: '突然、通信機から声が聞こえる。'
@@ -212,30 +210,19 @@ export class EarthEscapeSequence {
                 character: 'luna',
                 name: '???',
                 text: 'あの...聞こえますか？',
-                sprite: 'luna_comm'
+                sprite: 'comm'
             },
             {
                 character: 'luna',
                 name: '???',
                 text: '私、ルナといいます。ギルドのオペレーターです。',
-                sprite: 'luna_nervous'
+                sprite: 'nervous'
             },
             {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'これから、あなたのナビゲーションを担当させていただきます。',
-                sprite: 'luna_normal'
-            }
-        ];
-        
-        const choices = [
-            {
-                text: 'よろしく、ルナ。頼りにしてるよ。',
-                action: () => this.greetLunaWarmly()
-            },
-            {
-                text: 'ギルド？軍の通信士じゃないのか？',
-                action: () => this.askAboutGuild()
+                sprite: 'normal'
             }
         ];
         
@@ -243,8 +230,17 @@ export class EarthEscapeSequence {
             character: 'luna',
             name: 'ルナ',
             text: 'えっと...初めてなので緊張してますが、よろしくお願いします！',
-            sprite: 'luna_shy',
-            choices: choices
+            sprite: 'shy',
+            choices: [
+                {
+                    text: 'よろしく、ルナ。頼りにしてるよ。',
+                    onSelect: () => this.greetLunaWarmly()
+                },
+                {
+                    text: 'ギルド？軍の通信士じゃないのか？',
+                    onSelect: () => this.askAboutGuild()
+                }
+            ]
         });
         
         this.adventureUI.showDialogue(dialogues);
@@ -256,13 +252,13 @@ export class EarthEscapeSequence {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'あ、ありがとうございます！頑張ります！',
-                sprite: 'luna_happy'
+                sprite: 'happy'
             },
             {
                 character: 'luna',
                 name: 'ルナ',
                 text: '発進シークエンスを開始します。',
-                sprite: 'luna_normal'
+                sprite: 'normal'
             }
         ];
         
@@ -277,19 +273,19 @@ export class EarthEscapeSequence {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'はい、民間協力という形で...軍の通信システムは既に...',
-                sprite: 'luna_sad'
+                sprite: 'sad'
             },
             {
                 character: 'mechanic',
                 name: '整備主任',
                 text: '詳しい話は後だ！時間がない！',
-                sprite: 'mechanic_urgent'
+                sprite: 'urgent'
             },
             {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'そ、そうですね！発進準備を始めます！',
-                sprite: 'luna_surprised'
+                sprite: 'surprised'
             }
         ];
         
@@ -339,7 +335,7 @@ export class EarthEscapeSequence {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'カタパルト接続完了。エンジン出力上昇中...',
-                sprite: 'luna_focused'
+                sprite: 'focused'
             },
             {
                 text: '機体が振動し始める。エンジンの轟音が格納庫に響き渡る。'
@@ -348,7 +344,7 @@ export class EarthEscapeSequence {
                 character: 'luna',
                 name: 'ルナ',
                 text: 'すべてのシステム、グリーン！',
-                sprite: 'luna_normal'
+                sprite: 'normal'
             },
             {
                 character: 'luna',
@@ -363,19 +359,19 @@ export class EarthEscapeSequence {
                 character: 'commander',
                 name: '総統',
                 text: '（通信）もう時間がない！今すぐ発進しろ！',
-                sprite: 'commander_urgent'
+                sprite: 'urgent'
             },
             {
                 character: 'luna',
                 name: 'ルナ',
                 text: '緊急発進シークエンス起動！3...2...1...',
-                sprite: 'luna_urgent'
+                sprite: 'urgent'
             },
             {
                 character: 'luna',
                 name: 'ルナ',
                 text: '発進！！',
-                sprite: 'luna_shout'
+                sprite: 'shout'
             }
         ];
         

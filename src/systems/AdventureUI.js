@@ -371,39 +371,218 @@ export class AdventureUI {
         canvas.height = 1080;
         const ctx = canvas.getContext('2d');
         
-        // グラデーション背景
+        // シーン別の背景を生成
+        this.backgrounds = {
+            'bg_commander_office': this.createCommanderOffice(ctx, canvas),
+            'bg_hangar': this.createHangar(ctx, canvas),
+            'bg_mars_surface': this.createMarsSurface(ctx, canvas),
+            'bg_space_station': this.createSpaceStation(ctx, canvas)
+        };
+        
+        // デフォルト背景
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, '#001a33');
         gradient.addColorStop(1, '#000511');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // グリッド
-        ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 100) {
+        return canvas.toDataURL();
+    }
+    
+    createCommanderOffice(ctx, canvas) {
+        // 総統室の背景
+        // 暗めの部屋
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#0a0a15');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 窓（宇宙が見える）
+        ctx.fillStyle = '#000511';
+        ctx.fillRect(100, 100, 600, 400);
+        
+        // 星
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 50; i++) {
+            const x = 100 + Math.random() * 600;
+            const y = 100 + Math.random() * 400;
+            const size = Math.random() * 2;
             ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
         }
-        for (let i = 0; i < canvas.height; i += 100) {
-            ctx.beginPath();
-            ctx.moveTo(0, i);
-            ctx.lineTo(canvas.width, i);
-            ctx.stroke();
+        
+        // 地球（窓から見える）
+        const earthGradient = ctx.createRadialGradient(400, 300, 0, 400, 300, 80);
+        earthGradient.addColorStop(0, '#4444ff');
+        earthGradient.addColorStop(0.7, '#2222aa');
+        earthGradient.addColorStop(1, '#000066');
+        ctx.fillStyle = earthGradient;
+        ctx.beginPath();
+        ctx.arc(400, 300, 80, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // デスク
+        ctx.fillStyle = '#2a2a3a';
+        ctx.fillRect(0, canvas.height - 300, canvas.width, 300);
+        
+        // モニター
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(canvas.width - 400, canvas.height - 500, 300, 200);
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width - 400, canvas.height - 500, 300, 200);
+        
+        // 警告表示
+        ctx.fillStyle = '#ff0000';
+        ctx.font = 'bold 30px monospace';
+        ctx.fillText('ALERT', canvas.width - 350, canvas.height - 400);
+        
+        return canvas.toDataURL();
+    }
+    
+    createHangar(ctx, canvas) {
+        // 格納庫の背景
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 金属的な床
+        const floorGradient = ctx.createLinearGradient(0, canvas.height - 200, 0, canvas.height);
+        floorGradient.addColorStop(0, '#333344');
+        floorGradient.addColorStop(1, '#111122');
+        ctx.fillStyle = floorGradient;
+        ctx.fillRect(0, canvas.height - 200, canvas.width, 200);
+        
+        // 天井
+        ctx.fillStyle = '#1a1a2a';
+        ctx.fillRect(0, 0, canvas.width, 300);
+        
+        // 支柱
+        for (let i = 200; i < canvas.width; i += 400) {
+            ctx.fillStyle = '#444455';
+            ctx.fillRect(i, 0, 50, canvas.height);
+        }
+        
+        // 機体シルエット
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.moveTo(300, 600);
+        ctx.lineTo(350, 500);
+        ctx.lineTo(450, 480);
+        ctx.lineTo(550, 500);
+        ctx.lineTo(600, 600);
+        ctx.closePath();
+        ctx.fill();
+        
+        // ライト
+        for (let i = 100; i < canvas.width; i += 200) {
+            const lightGradient = ctx.createRadialGradient(i, 100, 0, i, 100, 100);
+            lightGradient.addColorStop(0, 'rgba(255, 255, 200, 0.5)');
+            lightGradient.addColorStop(1, 'rgba(255, 255, 200, 0)');
+            ctx.fillStyle = lightGradient;
+            ctx.fillRect(i - 100, 0, 200, 200);
         }
         
         return canvas.toDataURL();
     }
     
+    createMarsSurface(ctx, canvas) {
+        // 火星の表面
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 赤い空
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height / 2);
+        skyGradient.addColorStop(0, '#552222');
+        skyGradient.addColorStop(1, '#aa4444');
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+        
+        // 火星の地表
+        ctx.fillStyle = '#cc6644';
+        ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+        
+        // 岩
+        for (let i = 0; i < 10; i++) {
+            const x = Math.random() * canvas.width;
+            const y = canvas.height / 2 + Math.random() * (canvas.height / 2);
+            const size = 50 + Math.random() * 100;
+            ctx.fillStyle = '#aa4422';
+            ctx.beginPath();
+            ctx.ellipse(x, y, size, size / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 破壊されたコロニーのシルエット
+        ctx.fillStyle = '#331111';
+        ctx.fillRect(200, 400, 300, 200);
+        ctx.fillRect(250, 350, 50, 50);
+        ctx.fillRect(400, 350, 50, 80);
+        
+        // 煙
+        for (let i = 0; i < 5; i++) {
+            const smokeGradient = ctx.createRadialGradient(
+                250 + i * 40, 400 - i * 30, 0,
+                250 + i * 40, 400 - i * 30, 50
+            );
+            smokeGradient.addColorStop(0, 'rgba(100, 100, 100, 0.3)');
+            smokeGradient.addColorStop(1, 'rgba(100, 100, 100, 0)');
+            ctx.fillStyle = smokeGradient;
+            ctx.beginPath();
+            ctx.arc(250 + i * 40, 400 - i * 30, 50, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        return canvas.toDataURL();
+    }
+    
+    createSpaceStation(ctx, canvas) {
+        // 宇宙ステーション内部
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 背景（宇宙）
+        ctx.fillStyle = '#000511';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 星
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const size = Math.random() * 2;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // ステーションの窓枠
+        ctx.strokeStyle = '#666677';
+        ctx.lineWidth = 20;
+        ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+        
+        // 内部の床
+        const floorGradient = ctx.createLinearGradient(0, canvas.height - 150, 0, canvas.height);
+        floorGradient.addColorStop(0, 'rgba(100, 100, 120, 0.8)');
+        floorGradient.addColorStop(1, 'rgba(50, 50, 60, 0.8)');
+        ctx.fillStyle = floorGradient;
+        ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+        
+        return canvas.toDataURL();
+    }
+    
     createPlaceholderCharacter() {
+        // キャラクター別のスプライトを生成
+        this.characterSprites = {
+            'commander': this.createCommanderSprites(),
+            'luna': this.createLunaSprites(),
+            'mechanic': this.createMechanicSprites()
+        };
+        
+        // デフォルトシルエット
         const canvas = document.createElement('canvas');
         canvas.width = 800;
         canvas.height = 1200;
         const ctx = canvas.getContext('2d');
         
-        // シルエット
         ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
         ctx.beginPath();
         ctx.ellipse(400, 200, 150, 180, 0, 0, Math.PI * 2);
@@ -411,6 +590,271 @@ export class AdventureUI {
         
         ctx.fillStyle = 'rgba(0, 255, 255, 0.4)';
         ctx.fillRect(250, 380, 300, 600);
+        
+        return canvas.toDataURL();
+    }
+    
+    createCommanderSprites() {
+        const sprites = {};
+        
+        // 通常
+        sprites.normal = this.drawCommander('#444466', '#666688', 'neutral');
+        // 緊急
+        sprites.urgent = this.drawCommander('#554444', '#776666', 'serious');
+        // 真剣
+        sprites.serious = this.drawCommander('#444455', '#666677', 'serious');
+        // 悲しみ
+        sprites.sad = this.drawCommander('#334455', '#556677', 'sad');
+        // 誇らしげ
+        sprites.proud = this.drawCommander('#445566', '#667788', 'proud');
+        
+        return sprites;
+    }
+    
+    drawCommander(uniformColor, faceColor, expression) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+        
+        // 体（軍服）
+        ctx.fillStyle = uniformColor;
+        ctx.fillRect(200, 400, 400, 700);
+        
+        // 肩章
+        ctx.fillStyle = '#ffcc00';
+        ctx.fillRect(200, 400, 80, 30);
+        ctx.fillRect(520, 400, 80, 30);
+        
+        // 頭
+        ctx.fillStyle = faceColor;
+        ctx.beginPath();
+        ctx.ellipse(400, 250, 120, 150, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 帽子
+        ctx.fillStyle = uniformColor;
+        ctx.fillRect(280, 100, 240, 100);
+        ctx.fillStyle = '#ffcc00';
+        ctx.fillRect(280, 180, 240, 10);
+        
+        // 表情
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        
+        // 目
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(350, 240, 20, 5);
+        ctx.fillRect(430, 240, 20, 5);
+        
+        // 口
+        ctx.beginPath();
+        if (expression === 'serious' || expression === 'urgent') {
+            ctx.moveTo(370, 300);
+            ctx.lineTo(430, 300);
+        } else if (expression === 'sad') {
+            ctx.arc(400, 320, 30, 0, Math.PI, true);
+        } else if (expression === 'proud') {
+            ctx.arc(400, 280, 30, 0, Math.PI, false);
+        } else {
+            ctx.moveTo(370, 290);
+            ctx.lineTo(430, 290);
+        }
+        ctx.stroke();
+        
+        // 髭
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(350, 270, 100, 20);
+        
+        return canvas.toDataURL();
+    }
+    
+    createLunaSprites() {
+        const sprites = {};
+        
+        // 各表情
+        sprites.normal = this.drawLuna('#ffddcc', '#4488ff', 'normal');
+        sprites.happy = this.drawLuna('#ffddcc', '#4488ff', 'happy');
+        sprites.nervous = this.drawLuna('#ffddcc', '#4488ff', 'nervous');
+        sprites.surprised = this.drawLuna('#ffddcc', '#4488ff', 'surprised');
+        sprites.urgent = this.drawLuna('#ffddcc', '#4488ff', 'urgent');
+        sprites.shy = this.drawLuna('#ffddcc', '#4488ff', 'shy');
+        sprites.focused = this.drawLuna('#ffddcc', '#4488ff', 'focused');
+        sprites.shout = this.drawLuna('#ffddcc', '#4488ff', 'shout');
+        sprites.comm = this.drawLuna('#ffddcc', '#4488ff', 'normal', true);
+        
+        return sprites;
+    }
+    
+    drawLuna(skinColor, hairColor, expression, isComm = false) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+        
+        if (isComm) {
+            // 通信画面風の枠
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(100, 100, 600, 800);
+            ctx.fillStyle = 'rgba(0, 100, 200, 0.1)';
+            ctx.fillRect(100, 100, 600, 800);
+        }
+        
+        // 体（制服）
+        ctx.fillStyle = '#2266aa';
+        ctx.fillRect(200, 500, 400, 600);
+        
+        // 襟
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(300, 500);
+        ctx.lineTo(400, 550);
+        ctx.lineTo(500, 500);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 頭
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.ellipse(400, 300, 100, 120, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 髪
+        ctx.fillStyle = hairColor;
+        // ポニーテール
+        ctx.beginPath();
+        ctx.ellipse(400, 200, 110, 80, 0, 0, Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(500, 250, 60, 100, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 目
+        ctx.fillStyle = '#000000';
+        if (expression === 'happy' || expression === 'shy') {
+            // 笑い目
+            ctx.beginPath();
+            ctx.arc(360, 290, 15, 0, Math.PI, true);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(440, 290, 15, 0, Math.PI, true);
+            ctx.stroke();
+        } else if (expression === 'surprised' || expression === 'shout') {
+            // 大きい目
+            ctx.beginPath();
+            ctx.ellipse(360, 290, 20, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(440, 290, 20, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            // 通常の目
+            ctx.beginPath();
+            ctx.ellipse(360, 290, 15, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(440, 290, 15, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 口
+        ctx.strokeStyle = '#ff6666';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (expression === 'happy') {
+            ctx.arc(400, 340, 20, 0, Math.PI, false);
+        } else if (expression === 'nervous' || expression === 'shy') {
+            ctx.moveTo(380, 340);
+            ctx.quadraticCurveTo(400, 335, 420, 340);
+        } else if (expression === 'surprised' || expression === 'shout') {
+            ctx.ellipse(400, 345, 15, 20, 0, 0, Math.PI * 2);
+        } else if (expression === 'urgent') {
+            ctx.moveTo(380, 345);
+            ctx.lineTo(420, 345);
+        } else {
+            ctx.moveTo(385, 340);
+            ctx.lineTo(415, 340);
+        }
+        ctx.stroke();
+        
+        // ヘッドセット（オペレーター）
+        ctx.strokeStyle = '#666666';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(400, 300, 130, Math.PI, 0, true);
+        ctx.stroke();
+        ctx.fillStyle = '#333333';
+        ctx.beginPath();
+        ctx.arc(280, 300, 20, 0, Math.PI * 2);
+        ctx.fill();
+        
+        return canvas.toDataURL();
+    }
+    
+    createMechanicSprites() {
+        const sprites = {};
+        
+        sprites.normal = this.drawMechanic('#ccaa88', false);
+        sprites.proud = this.drawMechanic('#ccaa88', true);
+        sprites.urgent = this.drawMechanic('#ccaa88', false, true);
+        
+        return sprites;
+    }
+    
+    drawMechanic(skinColor, isProud = false, isUrgent = false) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 1200;
+        const ctx = canvas.getContext('2d');
+        
+        // つなぎ
+        ctx.fillStyle = '#666633';
+        ctx.fillRect(150, 450, 500, 700);
+        
+        // ポケット
+        ctx.fillStyle = '#555522';
+        ctx.fillRect(200, 600, 150, 100);
+        ctx.fillRect(450, 600, 150, 100);
+        
+        // 頭
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.ellipse(400, 280, 120, 140, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // キャップ
+        ctx.fillStyle = '#333333';
+        ctx.beginPath();
+        ctx.ellipse(400, 200, 130, 60, 0, 0, Math.PI);
+        ctx.fill();
+        ctx.fillRect(270, 200, 260, 20);
+        
+        // 目
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(340, 270, 30, 10);
+        ctx.fillRect(430, 270, 30, 10);
+        
+        // 口
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (isProud) {
+            ctx.arc(400, 320, 30, 0, Math.PI, false);
+        } else if (isUrgent) {
+            ctx.moveTo(370, 340);
+            ctx.lineTo(430, 340);
+        } else {
+            ctx.moveTo(370, 330);
+            ctx.quadraticCurveTo(400, 340, 430, 330);
+        }
+        ctx.stroke();
+        
+        // 工具
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(600, 500, 30, 200);
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(590, 480, 50, 40);
         
         return canvas.toDataURL();
     }
@@ -462,23 +906,13 @@ export class AdventureUI {
     }
     
     setBackground(backgroundId) {
-        // まずプレースホルダーを設定
-        this.backgroundLayer.style.backgroundImage = `url(${this.placeholderImages.background})`;
-        
-        // 実際の画像を試す
-        const imagePath = `${import.meta.env.BASE_URL}assets/adventure/backgrounds/${backgroundId}.jpg`;
-        const img = new Image();
-        
-        img.onload = () => {
-            this.backgroundLayer.style.backgroundImage = `url(${imagePath})`;
-        };
-        
-        img.onerror = () => {
-            console.warn(`Background image not found: ${backgroundId}`);
-            // プレースホルダーは既に設定済み
-        };
-        
-        img.src = imagePath;
+        // プロシージャル生成された背景を使用
+        if (this.backgrounds && this.backgrounds[backgroundId]) {
+            this.backgroundLayer.style.backgroundImage = `url(${this.backgrounds[backgroundId]})`;
+        } else {
+            // デフォルト背景
+            this.backgroundLayer.style.backgroundImage = `url(${this.placeholderImages.background})`;
+        }
     }
     
     setupCharacters(characters) {
@@ -517,20 +951,10 @@ export class AdventureUI {
         img.src = this.placeholderImages.character;
         charDiv.appendChild(img);
         
-        // 実際の画像を試す
-        const imagePath = `${import.meta.env.BASE_URL}assets/adventure/characters/${charData.id}/${charData.sprite}.png`;
-        const testImg = new Image();
-        
-        testImg.onload = () => {
-            img.src = imagePath;
-        };
-        
-        testImg.onerror = () => {
-            console.warn(`Character sprite not found: ${charData.id}/${charData.sprite}`);
-            // プレースホルダーは既に設定済み
-        };
-        
-        testImg.src = imagePath;
+        // プロシージャル生成されたスプライトを使用
+        if (this.characterSprites && this.characterSprites[charData.id] && this.characterSprites[charData.id][charData.sprite]) {
+            img.src = this.characterSprites[charData.id][charData.sprite];
+        }
         
         this.characterLayer.appendChild(charDiv);
         this.currentCharacters.set(charData.id, charDiv);
@@ -559,6 +983,7 @@ export class AdventureUI {
         this.currentDialogue = dialogues;
         this.currentDialogueIndex = 0;
         this.onDialogueCompleteCallback = onComplete;
+        this.dialogueBox.style.display = 'block';
         this.showCurrentDialogue();
     }
     
@@ -571,8 +996,8 @@ export class AdventureUI {
         const dialogue = this.currentDialogue[this.currentDialogueIndex];
         
         // キャラクター名表示
-        if (dialogue.speaker) {
-            this.nameplate.textContent = dialogue.speaker;
+        if (dialogue.name || dialogue.speaker) {
+            this.nameplate.textContent = dialogue.name || dialogue.speaker;
             this.nameplate.style.display = 'block';
         } else {
             this.nameplate.style.display = 'none';
@@ -584,13 +1009,13 @@ export class AdventureUI {
         
         // 履歴に追加
         this.dialogueHistory.push({
-            speaker: dialogue.speaker || 'ナレーション',
+            speaker: dialogue.name || dialogue.speaker || 'ナレーション',
             text: dialogue.text
         });
         
         // キャラクター表情変更
-        if (dialogue.sprite) {
-            this.updateCharacterSprite(dialogue.characterId, dialogue.sprite);
+        if (dialogue.sprite && dialogue.character) {
+            this.updateCharacterSprite(dialogue.character, dialogue.sprite);
         }
         
         // 選択肢がある場合
@@ -699,13 +1124,20 @@ export class AdventureUI {
     // キャラクタースプライト更新
     updateCharacterSprite(characterId, spriteName) {
         const charDiv = this.currentCharacters.get(characterId);
-        if (!charDiv) return;
+        if (!charDiv) {
+            // キャラクターがまだ表示されていない場合は追加
+            const charData = { id: characterId, sprite: spriteName };
+            this.addCharacter(charData, this.currentCharacters.size);
+            return;
+        }
         
         const img = charDiv.querySelector('img');
         if (!img) return;
         
-        const imagePath = `${import.meta.env.BASE_URL}assets/adventure/characters/${characterId}/${spriteName}.png`;
-        img.src = imagePath;
+        // プロシージャル生成されたスプライトを使用
+        if (this.characterSprites && this.characterSprites[characterId] && this.characterSprites[characterId][spriteName]) {
+            img.src = this.characterSprites[characterId][spriteName];
+        }
     }
     
     // エフェクト
